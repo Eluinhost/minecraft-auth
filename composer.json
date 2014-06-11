@@ -1,0 +1,15 @@
+{
+    "name": "publicuhc/minecraft-auth",
+    "description": "Fake Minecraft server for authentication checking",
+    "minimum-stability": "dev",
+    "license": "GPLv3",
+    "authors": [
+        {
+            "name": "Graham Howden",
+            "email": "graham_howden1@yahoo.co.uk"
+        }
+    ],
+    "require": {
+        "publicuhc/php-yggdrasil": "dev-master"
+    }
+}
