@@ -11,5 +11,8 @@
     ],
     "require": {
         "publicuhc/php-yggdrasil": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {"PublicUHC\\MinecraftAuth\\": "src/"}
     }
 }
