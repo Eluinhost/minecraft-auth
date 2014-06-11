@@ -16,7 +16,7 @@ class HandshakePacket {
      * @param $serverPort int port connecting to
      * @param int $nextState next state, 1 (HandshakePacketNextState::STATUS) for status and 2 (HandshakePacketNextState::LOGIN) for starting login
      */
-    public function __construct($protocolVersion, $serverAddress, $serverPort, $nextState = HandshakePacketNextState::STATUS)
+    public function __construct($protocolVersion, $serverAddress, $serverPort, $nextState = GameState::STATUS)
     {
         $this->protocolVersion = $protocolVersion;
         $this->serverAddress = $serverAddress;
