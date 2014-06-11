@@ -9,7 +9,7 @@ class HandshakePacket {
     private $nextState;
 
     /**
-     * Create a new Handshake packet (0x00)
+     * Create a new Handshake packet (serverbound->handshake 0x00)
      *
      * @param $protocolVersion int protocol version
      * @param $serverAddress String server address connecting to
