@@ -22,14 +22,14 @@ class HandshakePacket {
      * @param $protocolVersion int protocol version
      * @param $serverAddress String server address connecting to
      * @param $serverPort int port connecting to
-     * @param Stage $nextState next stage for the client
+     * @param Stage $nextStage next stage for the client
      */
-    public function __construct($protocolVersion, $serverAddress, $serverPort, Stage $nextState)
+    public function __construct($protocolVersion, $serverAddress, $serverPort, Stage $nextStage)
     {
         $this->protocolVersion = $protocolVersion;
         $this->serverAddress = $serverAddress;
         $this->serverPort = $serverPort;
-        $this->nextState = $nextState;
+        $this->nextStage = $nextStage;
     }
 
     /**
