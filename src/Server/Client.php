@@ -1,9 +1,12 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Server;
 
+use PublicUHC\MinecraftAuth\Server\Constants\Stage;
+
 class Client {
 
     private $connection;
+    private $stage;
 
     /**
      * Create a new Client
@@ -13,6 +16,7 @@ class Client {
     public function __construct($resource)
     {
         $this->connection = $resource;
+        $this->stage = Stage::HANDSHAKE;
     }
 
     /**
@@ -43,6 +47,14 @@ class Client {
     }
 
     /**
+     * @return int the stage, from PublicUHC\Server\Constants\Stage
+     */
+    public function getStage()
+    {
+        return $this->stage;
+    }
+
+    /**
      * Read a packet from the connection
      *
      * @throws NoDataException if there is no data supplied and closes the connection
@@ -55,13 +67,35 @@ class Client {
         echo "Packet Length: {$packetLength->getValue()}\n";
 
         //packet ID - the ID of the packet, relevant to each stage?
-        $packetID = VarInt::fromStream($this->connection);
-        echo "Packet ID: {$packetID->getValue()}\n";
+        $packetIDInt = VarInt::fromStream($this->connection);
+        $packetID = $packetIDInt->getValue();
+        echo "Packet ID: $packetID\n";
 
-        //TODO parse the rest of the packet
+        switch($this->stage) {
+            case Stage::HANDSHAKE:
+                switch($packetID) {
+                    case 0:
+                        //handshake packet
+                        $protocolVersion = VarInt::fromStream($this->connection);
+                        echo "Protocol Version: {$protocolVersion->getValue()}\n";
+                        //TODO more
+                        break;
+                    default:
+                        throw new InvalidDataException("$packetID is not a valid packet in this stage (HANDSHAKE)");
+                }
+                break;
+            case Stage::LOGIN:
+                switch($packetID) {
+                    default:
+                        throw new InvalidDataException("$packetID is not a valid packet in this stage (LOGIN)");
+                }
+                break;
+            default:
+                throw new InvalidDataException('Not in a valid stage');
+        }
 
-        $data = @fread($this->connection, $packetLength->getValue() - $packetID->getDataLength());
-        echo $data;
+        $data = @fread($this->connection, $packetLength->getValue() - $packetIDInt->getDataLength());
+        echo $data . "\n";
         @fwrite($this->connection, $data);
     }
 } 
