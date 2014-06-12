@@ -3,6 +3,7 @@ namespace PublicUHC\MinecraftAuth\Server;
 
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 
 class Client {
@@ -98,6 +99,14 @@ class Client {
                     case 0:
                         //request packet
                         //TODO send status response
+                        $response = new StatusResponsePacket();
+                        $response->setDescription('Test Server')
+                            ->setMaxPlayers(10)
+                            ->setOnlineCount(0)
+                            ->setProtocol(5)
+                            ->setVersion('1.7.9');
+
+                        $response->writeToStream($this->connection);
                         break;
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (STATUS)");
