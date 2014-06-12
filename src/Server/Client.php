@@ -95,6 +95,9 @@ class Client {
                 break;
             case Stage::STATUS():
                 switch($packetID) {
+                    case 0:
+                        //request packet
+                        //TODO send status response
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (STATUS)");
                 }
