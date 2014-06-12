@@ -12,7 +12,7 @@ class HandshakePacket {
     private $protocolVersion;
     private $serverAddress;
     private $serverPort;
-    private $nextState;
+    private $nextStage;
 
     /**
      * Create a new Handshake packet (serverbound->handshake 0x00)
@@ -20,9 +20,9 @@ class HandshakePacket {
      * @param $protocolVersion int protocol version
      * @param $serverAddress String server address connecting to
      * @param $serverPort int port connecting to
-     * @param int $nextState next state, 1 (HandshakePacketNextState::STATUS) for status and 2 (HandshakePacketNextState::LOGIN) for starting login
+     * @param int $nextState next state, 1 (HandshakePacketNextState::STATUS) for status and 2 (Stage::HANDSHAKE) for starting login
      */
-    public function __construct($protocolVersion, $serverAddress, $serverPort, $nextState = GameState::STATUS)
+    public function __construct($protocolVersion, $serverAddress, $serverPort, $nextState = Stage::HANDSHAKE)
     {
         $this->protocolVersion = $protocolVersion;
         $this->serverAddress = $serverAddress;
@@ -87,18 +87,18 @@ class HandshakePacket {
     /**
      * @return int the next stage, uses HandshakePacketNextState constants
      */
-    public function getNextState()
+    public function getNextStage()
     {
-        return $this->nextState;
+        return $this->nextStage;
     }
 
     /**
-     * @param $nextState int the next
+     * @param $nextStage int the next
      * @return $this
      */
-    public function setNextState($nextState)
+    public function setNextStage($nextStage)
     {
-        $this->nextState = $nextState;
+        $this->nextStage = $nextStage;
         return $this;
     }
 

@@ -2,7 +2,7 @@
 namespace PublicUHC\MinecraftAuth\Server;
 
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
-use PublicUHC\MinecraftAuth\Server\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\Stage;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 
 class Client {
@@ -18,7 +18,7 @@ class Client {
     public function __construct($resource)
     {
         $this->connection = $resource;
-        $this->stage = Stage::HANDSHAKE;
+        $this->stage = new Stage();
     }
 
     /**
@@ -81,6 +81,7 @@ class Client {
                         $handshake = HandshakePacket::fromStream($this->connection);
                         var_dump($handshake);
 
+                        $this->stage = new Stage($handshake->getNextState());
                         //TODO change client stage
                         break;
                     default:
