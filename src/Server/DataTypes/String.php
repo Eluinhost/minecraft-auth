@@ -19,17 +19,11 @@ class String extends DataType {
         $lengthInt = VarInt::fromStream($connection);
 
         $stringLength = $lengthInt->getValue();
-        $stringData = '';
-        $read = 0;
-        while($read < $stringLength) {
-            $data = @fread($connection, 1);
-            $read++;
-            if(!$data) {
-                throw new NoDataException();
-            }
-            $stringData .= $data;
-        }
 
-        return new String($stringData, $stringLength + $lengthInt->getDataLength());
+        $data = @fread($connection, $stringLength);
+        if(!$data) {
+            throw new NoDataException();
+        }
+        return new String($data, $stringLength + $lengthInt->getDataLength());
     }
 } 
