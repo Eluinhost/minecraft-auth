@@ -38,17 +38,19 @@ class MinecraftServer {
     }
 
     /**
-     * Removes the connection for the socket provided. Also closes the socket if found
+     * Removes the client from the list and closes it's connection if it isn't already
      *
-     * @param $socket
+     * @param $client
      */
-    public function removeClientForSocket($socket)
+    public function removeClient($client)
     {
         for($i = 0; $i<count($this->connections); $i++) {
             /** @var $connection Client */
             $connection = $this->connections[$i];
-            if($connection->getConnection() == $socket) {
-                $connection->close();
+            if($connection == $client) {
+                if($connection->isOpen()) {
+                    $connection->close();
+                }
                 unset($this->connections[$i]);
                 $this->connections = array_values($this->connections);
                 return;
@@ -102,22 +104,17 @@ class MinecraftServer {
             }
 
             //message from existing client
-            foreach($read as $client) {
-                $data = @fread($client, 65535);
+            foreach($read as $toread) {
 
-                echo("data = ".json_encode($data)."\n");
+                $client = $this->getClientForSocket($toread);
 
-                //if no data disconnect the client
-                if(!$data) {
-                    //output total amount
-                    echo "Now there are total ". count($this->connections) . " clients.\n";
-                    $this->removeClientForSocket($client);
+                //read the packet in
+                try {
+                    $client->readPacket();
+                } catch (NoDataException $ex) {
+                    $this->removeClient($client);
                     echo "A client disconnected. Now there are total ". count($this->connections) . " clients.\n";
-                    continue;
                 }
-
-                //TODO parse data
-                @fwrite($client, $data);
             }
         }
     }
