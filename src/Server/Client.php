@@ -2,9 +2,8 @@
 namespace PublicUHC\MinecraftAuth\Server;
 
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
-use PublicUHC\MinecraftAuth\Protocol\Stage;
+use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
-use UnexpectedValueException;
 
 class Client {
 
@@ -19,7 +18,7 @@ class Client {
     public function __construct($resource)
     {
         $this->connection = $resource;
-        $this->stage = new Stage();
+        $this->stage = Stage::HANDSHAKE();
     }
 
     /**
@@ -82,7 +81,7 @@ class Client {
                         $handshake = HandshakePacket::fromStream($this->connection);
 
                         //switch to the requested stage
-                        $this->stage = new Stage($handshake->getNextStage());
+                        $this->stage = $handshake->getNextStage();
                         break;
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (HANDSHAKE)");
@@ -94,6 +93,11 @@ class Client {
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (LOGIN)");
                 }
                 break;
+            case Stage::STATUS:
+                switch($packetID) {
+                    default:
+                        throw new InvalidDataException("$packetID is not a valid packet in this stage (STATUS)");
+                }
             default:
                 throw new InvalidDataException('Not in a valid stage');
         }
