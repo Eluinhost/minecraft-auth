@@ -16,15 +16,12 @@ class UnsignedShort extends DataType {
      */
     public static function fromStream($connection)
     {
-        $data = '';
-        $read = 0;
-        while($read < 2) {
-            $data = @fread($connection, 1);
-            $read++;
-            if(!$data) {
-                throw new NoDataException();
-            }
-            $data = ord($data);
+        $data = @fread($connection, 2);
+        if(!$data) {
+            throw new NoDataException();
         }
+        //unsigned short big-endian
+        $data = unpack('nshort', $data)['short'];
+        return new UnsignedShort($data, 2);
     }
 } 

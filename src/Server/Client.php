@@ -3,6 +3,7 @@ namespace PublicUHC\MinecraftAuth\Server;
 
 use PublicUHC\MinecraftAuth\Server\Constants\Stage;
 use PublicUHC\MinecraftAuth\Server\DataTypes\String;
+use PublicUHC\MinecraftAuth\Server\DataTypes\UnsignedShort;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 
 class Client {
@@ -83,6 +84,9 @@ class Client {
 
                         $serverAddress = String::fromStream($this->connection);
                         echo "Server Address: {$serverAddress->getValue()}\n";
+
+                        $serverPort = UnsignedShort::fromStream($this->connection);
+                        echo "Server Port: {$serverPort->getValue()}\n";
 
                         //TODO more
                         break;
