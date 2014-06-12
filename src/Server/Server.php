@@ -2,7 +2,7 @@
 
 use PublicUHC\MinecraftAuth\Server\MinecraftServer;
 
-require_once 'MinecraftServer.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $server = new MinecraftServer();
 $server->start();
