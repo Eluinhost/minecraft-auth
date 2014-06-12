@@ -46,17 +46,22 @@ class Client {
      * Read a packet from the connection
      *
      * @throws NoDataException if there is no data supplied and closes the connection
+     * @throws InvalidDataException if data didn't match the expected
      */
     public function readPacket()
     {
-        $data = @fread($this->connection, 65535);
+        //packet length - VarInt - length of the data + packetID
+        $packetLength = VarInt::fromStream($this->connection);
+        echo "Packet Length: {$packetLength->getValue()}\n";
 
-        if(!$data) {
-            $this->close();
-            throw new NoDataException();
-        }
-        echo("data = ".json_encode($data)."\n");
+        //packet ID - the ID of the packet, relevant to each stage?
+        $packetID = VarInt::fromStream($this->connection);
+        echo "Packet ID: {$packetID->getValue()}\n";
 
+        //TODO parse the rest of the packet
+
+        $data = @fread($this->connection, $packetLength->getValue() - $packetID->getDataLength());
+        echo $data;
         @fwrite($this->connection, $data);
     }
 } 
