@@ -3,8 +3,6 @@ namespace PublicUHC\MinecraftAuth\Server;
 
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Server\Constants\Stage;
-use PublicUHC\MinecraftAuth\Server\DataTypes\String;
-use PublicUHC\MinecraftAuth\Server\DataTypes\UnsignedShort;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 
 class Client {
