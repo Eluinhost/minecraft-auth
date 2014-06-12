@@ -113,6 +113,7 @@ class MinecraftServer {
                 try {
                     $client->readPacket();
                 } catch (Exception $ex) {
+                    echo $ex->getMessage() . "\n";
                     $this->removeClient($client);
                     echo "A client disconnected. Now there are total ". count($this->connections) . " clients.\n";
                 }
