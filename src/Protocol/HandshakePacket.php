@@ -117,6 +117,6 @@ class HandshakePacket {
         $serverPort = UnsignedShort::fromStream($connection);
         $nextState = VarInt::fromStream($connection);
 
-        return new HandshakePacket($protocolVersion, $serverAddress, $serverPort, $nextState);
+        return new HandshakePacket($protocolVersion->getValue(), $serverAddress->getValue(), $serverPort->getValue(), $nextState->getValue());
     }
 } 
