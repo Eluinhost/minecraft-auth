@@ -1,9 +1,5 @@
 <?php
-namespace PublicUHC\Server\DataTypes;
-
-
-use PublicUHC\MinecraftAuth\Server\InvalidDataException;
-use PublicUHC\MinecraftAuth\Server\NoDataException;
+namespace PublicUHC\MinecraftAuth\Server\DataTypes;
 
 abstract class DataType {
 
