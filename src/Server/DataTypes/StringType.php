@@ -4,7 +4,7 @@ namespace PublicUHC\MinecraftAuth\Server\DataTypes;
 use PublicUHC\MinecraftAuth\Server\InvalidDataException;
 use PublicUHC\MinecraftAuth\Server\NoDataException;
 
-class String extends DataType {
+class StringType extends DataType {
 
     /**
      * Reads a string from the stream
@@ -12,7 +12,7 @@ class String extends DataType {
      * @param $connection resource the stream to read from
      * @throws NoDataException if not data ended up null in the stream
      * @throws InvalidDataException if not valid varint
-     * @return String
+     * @return StringType
      */
     public static function fromStream($connection)
     {
@@ -24,6 +24,6 @@ class String extends DataType {
         if(!$data) {
             throw new NoDataException();
         }
-        return new String($data, $stringLength + $lengthInt->getDataLength());
+        return new StringType($data, $stringLength + $lengthInt->getDataLength());
     }
 } 

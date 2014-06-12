@@ -1,7 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Protocol;
 
-use PublicUHC\MinecraftAuth\Server\DataTypes\String;
+use PublicUHC\MinecraftAuth\Server\DataTypes\StringType;
 use PublicUHC\MinecraftAuth\Server\DataTypes\UnsignedShort;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 use PublicUHC\MinecraftAuth\Server\InvalidDataException;
@@ -113,7 +113,7 @@ class HandshakePacket {
     public static function fromStream($connection)
     {
         $protocolVersion = VarInt::fromStream($connection);
-        $serverAddress = String::fromStream($connection);
+        $serverAddress = StringType::fromStream($connection);
         $serverPort = UnsignedShort::fromStream($connection);
         $nextState = VarInt::fromStream($connection);
 
