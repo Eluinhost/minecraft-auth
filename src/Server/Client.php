@@ -81,7 +81,7 @@ class Client {
                         $handshake = HandshakePacket::fromStream($this->connection);
                         var_dump($handshake);
 
-                        $this->stage = new Stage($handshake->getNextState());
+                        $this->stage = new Stage($handshake->getNextStage());
                         //TODO change client stage
                         break;
                     default:
