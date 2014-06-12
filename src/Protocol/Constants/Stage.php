@@ -7,9 +7,9 @@ use MabeEnum\Enum;
  * Class Stage
  * @package PublicUHC\MinecraftAuth\Protocol\Constants
  *
- * @method static HANDSHAKE
- * @method static STATUS
- * @method static LOGIN
+ * @method static Stage HANDSHAKE()
+ * @method static Stage STATUS()
+ * @method static Stage LOGIN()
  */
 final class Stage extends Enum {
 
