@@ -1,6 +1,8 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Protocol;
 
+use InvalidArgumentException;
+use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Server\DataTypes\StringType;
 use PublicUHC\MinecraftAuth\Server\DataTypes\UnsignedShort;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
@@ -20,9 +22,9 @@ class HandshakePacket {
      * @param $protocolVersion int protocol version
      * @param $serverAddress String server address connecting to
      * @param $serverPort int port connecting to
-     * @param int $nextState next state, 1 (HandshakePacketNextState::STATUS) for status and 2 (Stage::HANDSHAKE) for starting login
+     * @param Stage $nextState next stage for the client
      */
-    public function __construct($protocolVersion, $serverAddress, $serverPort, $nextState = Stage::HANDSHAKE)
+    public function __construct($protocolVersion, $serverAddress, $serverPort, Stage $nextState)
     {
         $this->protocolVersion = $protocolVersion;
         $this->serverAddress = $serverAddress;
@@ -85,7 +87,7 @@ class HandshakePacket {
     }
 
     /**
-     * @return int the next stage, uses HandshakePacketNextState constants
+     * @return Stage the next stage, uses HandshakePacketNextState constants
      */
     public function getNextStage()
     {
@@ -93,10 +95,10 @@ class HandshakePacket {
     }
 
     /**
-     * @param $nextStage int the next
+     * @param $nextStage Stage the next
      * @return $this
      */
-    public function setNextStage($nextStage)
+    public function setNextStage(Stage $nextStage)
     {
         $this->nextStage = $nextStage;
         return $this;
@@ -117,10 +119,16 @@ class HandshakePacket {
         $serverPort = UnsignedShort::fromStream($connection);
         $nextState = VarInt::fromStream($connection);
 
-        if($nextState != Stage::LOGIN && $nextState != Stage::STATUS) {
+        try {
+            $stage = Stage::get($nextState);
+
+            if($nextState != Stage::LOGIN() && $nextState != Stage::STATUS()) {
+                throw new InvalidDataException('Handshake packet has an invalid value');
+            }
+
+            return new HandshakePacket($protocolVersion->getValue(), $serverAddress->getValue(), $serverPort->getValue(), $stage);
+        } catch(InvalidArgumentException $ex) {
             throw new InvalidDataException('Handshake packet has an invalid value');
         }
-
-        return new HandshakePacket($protocolVersion->getValue(), $serverAddress->getValue(), $serverPort->getValue(), $nextState->getValue());
     }
 } 
