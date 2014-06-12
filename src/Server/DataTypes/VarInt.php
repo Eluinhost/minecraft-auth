@@ -1,7 +1,8 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Server;
+namespace PublicUHC\MinecraftAuth\Server\DataTypes;
 
-use PublicUHC\Server\DataTypes\DataType;
+use PublicUHC\MinecraftAuth\Server\InvalidDataException;
+use PublicUHC\MinecraftAuth\Server\NoDataException;
 
 class VarInt extends DataType {
 
