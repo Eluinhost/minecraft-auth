@@ -98,11 +98,23 @@ class Client {
                     case 0:
                         //request packet
                         //TODO send status response
+                        break;
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (STATUS)");
                 }
+                break;
             default:
                 throw new InvalidDataException('Not in a valid stage');
         }
+    }
+
+    /**
+     * helper function TODO remove
+     * @param $length
+     */
+    private function printContents($length)
+    {
+        $data = @fread($this->connection, $length);
+        echo $data . "\n";
     }
 } 
