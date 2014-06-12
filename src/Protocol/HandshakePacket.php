@@ -1,6 +1,12 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Protocol;
 
+use PublicUHC\MinecraftAuth\Server\DataTypes\String;
+use PublicUHC\MinecraftAuth\Server\DataTypes\UnsignedShort;
+use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\Server\InvalidDataException;
+use PublicUHC\MinecraftAuth\Server\NoDataException;
+
 class HandshakePacket {
 
     private $protocolVersion;
@@ -94,5 +100,23 @@ class HandshakePacket {
     {
         $this->nextState = $nextState;
         return $this;
+    }
+
+    /**
+     * Reads a handshake packet data from the stream
+     *
+     * @param $connection resource the stream to read from
+     * @throws NoDataException if not data ended up null in the stream
+     * @throws InvalidDataException if not valid packet structure
+     * @return HandshakePacket
+     */
+    public static function fromStream($connection)
+    {
+        $protocolVersion = VarInt::fromStream($connection);
+        $serverAddress = String::fromStream($connection);
+        $serverPort = UnsignedShort::fromStream($connection);
+        $nextState = VarInt::fromStream($connection);
+
+        return new HandshakePacket($protocolVersion, $serverAddress, $serverPort, $nextState);
     }
 } 

@@ -1,6 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Server;
 
+use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Server\Constants\Stage;
 use PublicUHC\MinecraftAuth\Server\DataTypes\String;
 use PublicUHC\MinecraftAuth\Server\DataTypes\UnsignedShort;
@@ -79,16 +80,10 @@ class Client {
                 switch($packetID) {
                     case 0:
                         //handshake packet
-                        $protocolVersion = VarInt::fromStream($this->connection);
-                        echo "Protocol Version: {$protocolVersion->getValue()}\n";
+                        $handshake = HandshakePacket::fromStream($this->connection);
+                        var_dump($handshake);
 
-                        $serverAddress = String::fromStream($this->connection);
-                        echo "Server Address: {$serverAddress->getValue()}\n";
-
-                        $serverPort = UnsignedShort::fromStream($this->connection);
-                        echo "Server Port: {$serverPort->getValue()}\n";
-
-                        //TODO more
+                        //TODO change client stage
                         break;
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (HANDSHAKE)");
