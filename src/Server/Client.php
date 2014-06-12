@@ -4,6 +4,7 @@ namespace PublicUHC\MinecraftAuth\Server;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\Stage;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
+use UnexpectedValueException;
 
 class Client {
 
@@ -79,10 +80,9 @@ class Client {
                     case 0:
                         //handshake packet
                         $handshake = HandshakePacket::fromStream($this->connection);
-                        var_dump($handshake);
 
+                        //switch to the requested stage
                         $this->stage = new Stage($handshake->getNextStage());
-                        //TODO change client stage
                         break;
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (HANDSHAKE)");

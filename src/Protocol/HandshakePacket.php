@@ -117,6 +117,10 @@ class HandshakePacket {
         $serverPort = UnsignedShort::fromStream($connection);
         $nextState = VarInt::fromStream($connection);
 
+        if($nextState != Stage::LOGIN && $nextState != Stage::STATUS) {
+            throw new InvalidDataException('Handshake packet has an invalid value');
+        }
+
         return new HandshakePacket($protocolVersion->getValue(), $serverAddress->getValue(), $serverPort->getValue(), $nextState->getValue());
     }
 } 
