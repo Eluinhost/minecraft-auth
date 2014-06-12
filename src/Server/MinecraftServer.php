@@ -1,6 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Server;
 
+use Exception;
 use UnexpectedValueException;
 
 class MinecraftServer {
@@ -111,7 +112,7 @@ class MinecraftServer {
                 //read the packet in
                 try {
                     $client->readPacket();
-                } catch (NoDataException $ex) {
+                } catch (Exception $ex) {
                     $this->removeClient($client);
                     echo "A client disconnected. Now there are total ". count($this->connections) . " clients.\n";
                 }
