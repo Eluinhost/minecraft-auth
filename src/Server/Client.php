@@ -101,9 +101,5 @@ class Client {
             default:
                 throw new InvalidDataException('Not in a valid stage');
         }
-
-        $data = @fread($this->connection, $packetLength->getValue() - $packetIDInt->getDataLength());
-        echo $data . "\n";
-        @fwrite($this->connection, $data);
     }
 } 
