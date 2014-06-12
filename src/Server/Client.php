@@ -74,7 +74,7 @@ class Client {
         echo "Packet ID: $packetID\n";
 
         switch($this->stage) {
-            case Stage::HANDSHAKE:
+            case Stage::HANDSHAKE():
                 switch($packetID) {
                     case 0:
                         //handshake packet
@@ -87,13 +87,13 @@ class Client {
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (HANDSHAKE)");
                 }
                 break;
-            case Stage::LOGIN:
+            case Stage::LOGIN():
                 switch($packetID) {
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (LOGIN)");
                 }
                 break;
-            case Stage::STATUS:
+            case Stage::STATUS():
                 switch($packetID) {
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (STATUS)");
