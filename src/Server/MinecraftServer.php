@@ -17,44 +17,107 @@ class MinecraftServer {
         }
     }
 
+    /**
+     * Return the client for the socket provided. If none exists one is created and returned
+     *
+     * @param $socket resource the socket connection
+     * @return Client
+     */
+    public function getClientForSocket($socket)
+    {
+        /** @var $connection Client */
+        foreach($this->connections as $connection) {
+            if($connection->getConnection() == $socket) {
+                return $connection;
+            }
+        }
+
+        $client = new Client($socket);
+        $this->connections[] = $client;
+        return $client;
+    }
+
+    /**
+     * Removes the connection for the socket provided. Also closes the socket if found
+     *
+     * @param $socket
+     */
+    public function removeClientForSocket($socket)
+    {
+        for($i = 0; $i<count($this->connections); $i++) {
+            /** @var $connection Client */
+            $connection = $this->connections[$i];
+            if($connection->getConnection() == $socket) {
+                $connection->close();
+                unset($this->connections[$i]);
+                $this->connections = array_values($this->connections);
+                return;
+            }
+        }
+    }
+
     public function start()
     {
         while(true) {
-            //prepare readable sockets
-            $read_socks = $this->connections;
-            $read_socks[] = $this->server;
 
-            if(!stream_select ( $read_socks, $write, $except, 5)) {
+            //list of all the connections we want to check this round
+            $read = [];
+
+            //add the base server socket to check for new connections
+            $read[0] = $this->server;
+
+            //add all of the client sockets
+            /** @var $connection Client */
+            foreach($this->connections as $connection) {
+                if($connection->getConnection() != null) {
+                    $read[] = $connection->getConnection();
+                }
+            }
+
+            //check streams for read/write with timeout of 5 seconds
+            if(!@stream_select($read, $write, $except, 5)) {
                 continue;
             }
 
-            //new client
-            if(in_array($this->server, $read_socks)) {
+            //if the server is in the available list
+            if(in_array($this->server, $read)) {
+                //attempt to accept a new client
                 $new_client = stream_socket_accept($this->server);
 
+                //if new connection
                 if ($new_client) {
+
                     //print remote client information, ip and port number
                     echo 'Connection accepted from ' . stream_socket_get_name($new_client, true) . "\n";
 
-                    $this->connections[] = $new_client;
+                    //add to our list
+                    $this->getClientForSocket($new_client);
+
+                    //output total amount
                     echo "Now there are total ". count($this->connections) . " clients.\n";
                 }
 
-                //delete the server socket from the read sockets
-                unset($read_socks[ array_search($this->server, $read_socks) ]);
+                //delete the server socket from the read list
+                unset($read[array_search($this->server, $read)]);
             }
 
             //message from existing client
-            foreach($read_socks as $sock) {
-                $data = fread($sock, 65535);
+            foreach($read as $client) {
+                $data = @fread($client, 65535);
+
+                echo("data = ".json_encode($data)."\n");
+
+                //if no data disconnect the client
                 if(!$data) {
-                    unset($this->connections[ array_search($sock, $this->connections) ]);
-                    @fclose($sock);
+                    //output total amount
+                    echo "Now there are total ". count($this->connections) . " clients.\n";
+                    $this->removeClientForSocket($client);
                     echo "A client disconnected. Now there are total ". count($this->connections) . " clients.\n";
                     continue;
                 }
-                //echo the message back to client
-                fwrite($sock, $data);
+
+                //TODO parse data
+                @fwrite($client, $data);
             }
         }
     }
