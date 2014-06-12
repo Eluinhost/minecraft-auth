@@ -2,6 +2,8 @@
 namespace PublicUHC\MinecraftAuth\Server;
 
 use PublicUHC\MinecraftAuth\Server\Constants\Stage;
+use PublicUHC\MinecraftAuth\Server\DataTypes\String;
+use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 
 class Client {
 
@@ -78,6 +80,10 @@ class Client {
                         //handshake packet
                         $protocolVersion = VarInt::fromStream($this->connection);
                         echo "Protocol Version: {$protocolVersion->getValue()}\n";
+
+                        $serverAddress = String::fromStream($this->connection);
+                        echo "Server Address: {$serverAddress->getValue()}\n";
+
                         //TODO more
                         break;
                     default:
