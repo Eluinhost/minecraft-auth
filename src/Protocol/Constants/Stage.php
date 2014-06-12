@@ -1,12 +1,17 @@
 <?php
+namespace PublicUHC\MinecraftAuth\Protocol\Constants;
 
-namespace PublicUHC\MinecraftAuth\Protocol;
+use MabeEnum\Enum;
 
-use SplEnum;
-
-class Stage extends SplEnum {
-
-    const __default = self::HANDSHAKE;
+/**
+ * Class Stage
+ * @package PublicUHC\MinecraftAuth\Protocol\Constants
+ *
+ * @method static HANDSHAKE
+ * @method static STATUS
+ * @method static LOGIN
+ */
+final class Stage extends Enum {
 
     const HANDSHAKE = 0;
     const STATUS = 1;
