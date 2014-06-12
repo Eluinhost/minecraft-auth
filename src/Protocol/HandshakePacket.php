@@ -120,15 +120,16 @@ class HandshakePacket {
         $nextState = VarInt::fromStream($connection);
 
         try {
-            $stage = Stage::get($nextState);
+            $nextStateInt = $nextState->getValue();
 
-            if($nextState != Stage::LOGIN() && $nextState != Stage::STATUS()) {
-                throw new InvalidDataException('Handshake packet has an invalid value');
+            $stage = Stage::get($nextStateInt);
+            if($stage != Stage::LOGIN() && $stage != Stage::STATUS()) {
+                throw new InvalidDataException('Handshake packet has an invalid stage value');
             }
 
             return new HandshakePacket($protocolVersion->getValue(), $serverAddress->getValue(), $serverPort->getValue(), $stage);
         } catch(InvalidArgumentException $ex) {
-            throw new InvalidDataException('Handshake packet has an invalid value');
+            throw new InvalidDataException('Handshake packet has an invalid stage value');
         }
     }
 } 
