@@ -114,10 +114,10 @@ class HandshakePacket {
      */
     public static function fromStream($connection)
     {
-        $protocolVersion = VarInt::fromStream($connection);
+        $protocolVersion = VarInt::readUnsignedVarInt($connection);
         $serverAddress = StringType::fromStream($connection);
         $serverPort = UnsignedShort::fromStream($connection);
-        $nextState = VarInt::fromStream($connection);
+        $nextState = VarInt::readUnsignedVarInt($connection);
 
         try {
             $nextStateInt = $nextState->getValue();

@@ -6,42 +6,6 @@ use PublicUHC\MinecraftAuth\Server\NoDataException;
 
 class VarInt extends DataType {
 
-    /**
-     * Reads a varint from the stream
-     *
-     * @param $connection resource the stream to read from
-     * @throws NoDataException if not data ended up null in the stream
-     * @throws InvalidDataException if not valid varint
-     * @return VarInt
-     */
-    public static function fromStream($connection)
-    {
-        $result = $i = 0;
-
-        while(true) {
-            $data = @fread($connection, 1);
-            if(!$data) {
-                throw new NoDataException();
-            }
-            //ascii char
-            $data = ord($data);
-
-            //if only I knew...
-            $result |= ($data & 0x7F) << $i++ * 7;
-
-            //if it's too large
-            if( $i > 5 ) {
-                throw new InvalidDataException();
-            }
-
-            //also probably pretty important
-            if(($data & 0x80) != 128) {
-                break;
-            }
-        }
-        return new VarInt($result, $i);
-    }
-
     public static function fromInt($int)
     {
         $string = decbin($int);
@@ -94,5 +58,45 @@ class VarInt extends DataType {
             $str .= chr(hexdec(substr($hex, $i, 2)));
         }
         return $str;
+    }
+
+    private static function read($fd, $length)
+    {
+        // Protect against 0 byte reads when an EOF
+        if ($length < 1) return '';
+
+        $bytes = fread($fd, $length);
+        if (false === $bytes) {
+            throw new InvalidDataException();
+        }
+
+        return $bytes;
+    }
+
+    /**
+     * Read a varint from string or resource.
+     *
+     * @param $data String|resource the data
+     * @throws InvalidDataException on invalid data
+     * @return VarInt the parsed VarInt
+     */
+    public static function readUnsignedVarInt($data) {
+        $fd = null;
+        if (is_resource($data)) {
+            $fd = $data;
+        } else {
+            $fd = fopen('data://text/plain,' . urlencode($data), 'rb');
+        }
+        $result = $shift = 0;
+        do {
+            $byte = ord(self::read($fd, 1));
+            $result |= ($byte & 0x7f) << $shift++ * 7;
+
+            if($shift > 5) {
+                throw new InvalidDataException('VarInt greater than allowed range');
+            }
+        } while ($byte > 0x7f);
+
+        return new VarInt($result, $shift);
     }
 } 

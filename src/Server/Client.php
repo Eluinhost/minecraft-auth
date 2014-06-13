@@ -66,11 +66,11 @@ class Client {
     public function readPacket()
     {
         //packet length - VarInt - length of the data + packetID
-        $packetLength = VarInt::fromStream($this->connection);
+        $packetLength = VarInt::readUnsignedVarInt($this->connection);
         echo "Packet Length: {$packetLength->getValue()}\n";
 
         //packet ID - the ID of the packet, relevant to each stage?
-        $packetIDInt = VarInt::fromStream($this->connection);
+        $packetIDInt = VarInt::readUnsignedVarInt($this->connection);
         $packetID = $packetIDInt->getValue();
         echo "Packet ID: $packetID\n";
 
