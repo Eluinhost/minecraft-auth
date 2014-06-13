@@ -6,27 +6,19 @@ use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
 use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
-use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 use React\Socket\Connection;
 
 class Client {
 
-    private $socket;
     private $stage;
 
     public function __construct(Connection $socket)
     {
-        $this->socket = $socket;
         $socket->on('data', [$this, 'onData']);
         $this->stage = Stage::HANDSHAKE();
     }
 
-    public function disconnect()
-    {
-        $this->socket->end();
-    }
-
-    public function onData($data)
+    public function onData($data, Connection $connection)
     {
         try {
             $packetLengthVarInt = VarInt::readUnsignedVarInt($data);
@@ -61,7 +53,7 @@ class Client {
                                 ->setProtocol(5)
                                 ->setVersion('1.7.9');
 
-                            //$this->socket->write($response->encode());
+                            $connection->write($response->encode());
                             break;
                         case 1:
                             //ping
@@ -76,12 +68,10 @@ class Client {
             }
         } catch (Exception $ex) {
             echo "Exception thrown: {$ex->getMessage()} disconnecting client\n";
-            $this->disconnect();
+            $connection->end();
         }
-    }
-
-    public function getSocket()
-    {
-        return $this->socket;
+        $len = strlen($data);
+        $data = bin2hex($data);
+        echo "FINISHED PACKET PROCESSING, EXTRA DATA: $data LEN $len\n";
     }
 } 
