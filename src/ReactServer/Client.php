@@ -28,7 +28,7 @@ class Client {
             do {
                 echo "START PROCESS BUFFER " . bin2hex($this->buffer) . "\n";
 
-                $packetLengthVarInt = VarInt::readUnsignedVarInt($data);
+                $packetLengthVarInt = VarInt::readUnsignedVarInt($this->buffer);
                 if($packetLengthVarInt === false) {
                     echo "NOT ENOUGH DATA TO READ PACKET LENGTH\n";
                     return;
