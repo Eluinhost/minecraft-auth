@@ -11,7 +11,8 @@
     ],
     "require": {
         "publicuhc/php-yggdrasil": "dev-master",
-        "marc-mabe/php-enum": "1.2.*"
+        "marc-mabe/php-enum": "1.2.*",
+        "react/react": "0.4.*"
     },
     "autoload": {
         "psr-4": {"PublicUHC\\MinecraftAuth\\": "src/"}
