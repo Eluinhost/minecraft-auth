@@ -6,28 +6,11 @@ use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 class VarInt extends DataType {
 
     /**
-     * Writes to the stream
-     *
-     * @param $fd resource the stream to write to
-     * @param $data String the data to write
-     * @param $length int the length of the data
-     * @throws InvalidDataException
-     */
-    private static function write($fd, $data, $length)
-    {
-        $written = fwrite($fd, $data, $length);
-        if ($written !== $length) {
-            throw new InvalidDataException();
-        }
-    }
-
-    /**
      * Reads from the stream
      *
      * @param $fd resource the stream to read from
      * @param $length int the length to read
-     * @return string the read bytes
-     * @throws InvalidDataException
+     * @return string|false the read bytes or false if read failed
      */
     private static function read($fd, $length)
     {
@@ -36,31 +19,30 @@ class VarInt extends DataType {
 
         $bytes = fread($fd, $length);
         if (false === $bytes) {
-            throw new InvalidDataException();
+            return false;
         }
 
         return $bytes;
     }
 
     /**
-     * Read a varint from string or resource.
+     * Read a varint from beginning of the string.
      *
-     * @param $data String|resource the data
+     * @param $data String the data
      * @throws InvalidDataException on invalid data
-     * @return VarInt the parsed VarInt
+     * @return VarInt|false the parsed VarInt if parsed, false if not enough data
      */
     public static function readUnsignedVarInt($data)
     {
-        $fd = null;
-        if (is_resource($data)) {
-            $fd = $data;
-        } else {
-            $fd = fopen('data://text/plain,' . urlencode($data), 'rb');
-        }
+        $fd = $fd = fopen('data://text/plain,' . urlencode($data), 'rb');
+
         $original = '';
         $result = $shift = 0;
         do {
             $readValue = self::read($fd, 1);
+            if(false === $readValue) {
+                return false;
+            }
             $original .= $readValue;
             $byte = ord($readValue);
             $result |= ($byte & 0x7f) << $shift++ * 7;
@@ -77,11 +59,10 @@ class VarInt extends DataType {
      * Writes a VarInt
      *
      * @param $data int the value to write
-     * @param null $connection if null nothing happens, if set will write the data to the stream
      * @return VarInt the encoded value
      * @throws InvalidDataException
      */
-    public static function writeUnsignedVarInt($data, $connection = null) {
+    public static function writeUnsignedVarInt($data) {
         if($data < 0) {
             throw new InvalidDataException('Cannot write negative values');
         }
@@ -89,8 +70,6 @@ class VarInt extends DataType {
 
         //single bytes don't need encoding
         if ($data < 0x80) {
-            if($connection != null)
-                self::write($connection, chr($data), 1);
             return new VarInt($data, $data, 1);
         }
 
@@ -105,9 +84,6 @@ class VarInt extends DataType {
 
         //build the actual bytes from the encoded array
         $bytes = call_user_func_array('pack', array_merge(array('C*'), $encodedBytes));;
-
-        if($connection != null)
-            self::write($connection, $bytes, strlen($bytes));
 
         return new VarInt($orig, $bytes, strlen($bytes));
     }
