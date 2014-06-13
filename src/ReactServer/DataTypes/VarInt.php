@@ -34,7 +34,7 @@ class VarInt extends DataType {
      */
     public static function readUnsignedVarInt($data)
     {
-        $fd = $fd = fopen('data://text/plain,' . urlencode($data), 'rb');
+        $fd = fopen('data://text/plain,' . urlencode($data), 'rb');
 
         $original = '';
         $result = $shift = 0;
