@@ -14,6 +14,9 @@
         "marc-mabe/php-enum": "1.2.*",
         "react/react": "0.4.*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
     "autoload": {
         "psr-4": {"PublicUHC\\MinecraftAuth\\": "src/"}
     }
