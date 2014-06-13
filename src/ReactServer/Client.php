@@ -1,7 +1,6 @@
 <?php
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
-use Exception;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
@@ -11,6 +10,7 @@ use React\Socket\Connection;
 class Client {
 
     private $stage;
+    private $buffer = '';
 
     public function __construct(Connection $socket)
     {
@@ -20,19 +20,35 @@ class Client {
 
     public function onData($data, Connection $connection)
     {
-        try {
-            $packetLengthVarInt = VarInt::readUnsignedVarInt($data);
-            $data = substr($data, $packetLengthVarInt->getDataLength());
+        echo "NEW DATA: ".bin2hex($data)."\n";
 
-            $packetIDVarInt = VarInt::readUnsignedVarInt($data);
-            $data = substr($data, $packetIDVarInt->getDataLength());
+        $this->buffer .= $data;
+
+        do {
+
+            echo "START PROCESS BUFFER " . bin2hex($this->buffer) . "\n";
+
+            $packetLengthVarInt = VarInt::readUnsignedVarInt($data);
+
+            //if we don't have enough data to read the entire packet wait for more data to enter
+            if (false == $packetLengthVarInt || strlen($this->buffer) < ($packetLengthVarInt->getDataLength() + $packetLengthVarInt->getValue())) {
+                echo "NOT ENOUGH DATA TO READ PACKET\n";
+                return;
+            }
+
+            echo "-> PACKET LENGTH: {$packetLengthVarInt->getValue()}\n";
+
+            $this->buffer = substr($this->buffer, $packetLengthVarInt->getDataLength());
+
+            $packetIDVarInt = VarInt::readUnsignedVarInt($this->buffer);
+            $this->buffer = substr($this->buffer, $packetIDVarInt->getDataLength());
             echo "-> PACKET ID: {$packetIDVarInt->getValue()}, STAGE: {$this->stage->getName()}\n";
 
             switch ($this->stage) {
                 case Stage::HANDSHAKE():
                     switch ($packetIDVarInt->getValue()) {
                         case 0:
-                            $handshake = HandshakePacket::fromStreamData($data);
+                            $handshake = HandshakePacket::fromStreamData($this->buffer);
 
                             //switch stage
                             echo "  -> SWITCHING TO STAGE: {$handshake->getNextStage()->getName()}\n";
@@ -57,7 +73,7 @@ class Client {
                             break;
                         case 1:
                             //ping
-                            echo "PING DATA: $data";
+                            echo "PING DATA: ".bin2hex($this->buffer)."\n";
                             break;
                         default:
                             throw new InvalidDataException('Packet not implemented');
@@ -66,12 +82,10 @@ class Client {
                 default:
                     throw new InvalidDataException('Unknown stage');
             }
-        } catch (Exception $ex) {
-            echo "Exception thrown: {$ex->getMessage()} disconnecting client\n";
-            $connection->end();
-        }
-        $len = strlen($data);
-        $data = bin2hex($data);
-        echo "FINISHED PACKET PROCESSING, EXTRA DATA: $data LEN $len\n";
+
+            $len = strlen($this->buffer);
+            $data = bin2hex($this->buffer);
+            echo "FINISHED PACKET PROCESSING, EXTRA DATA: $data LEN $len\n";
+        }while(strlen($this->buffer) > 0);
     }
 } 
