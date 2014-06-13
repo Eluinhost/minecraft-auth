@@ -107,29 +107,42 @@ class HandshakePacket {
     /**
      * Reads a handshake packet data from the stream
      *
-     * @param $connection resource the stream to read from
+     * @param $data String
      * @throws NoDataException if not data ended up null in the stream
      * @throws InvalidDataException if not valid packet structure
      * @return HandshakePacket
      */
-    public static function fromStream($connection)
+    public static function fromStreamData($data)
     {
-        $protocolVersion = VarInt::readUnsignedVarInt($connection);
-        $serverAddress = StringType::fromStream($connection);
-        $serverPort = UnsignedShort::fromStream($connection);
-        $nextState = VarInt::readUnsignedVarInt($connection);
+        $versionVarInt = VarInt::readUnsignedVarInt($data);
+        $data = substr($data, $versionVarInt->getDataLength());
+        echo "  -> VERSION: {$versionVarInt->getValue()}\n";
+
+        $addressStringLength = VarInt::readUnsignedVarInt($data);
+        $data = substr($data, $addressStringLength->getDataLength());
+
+        $address = substr($data, 0, $addressStringLength->getValue());
+        $data = substr($data, $addressStringLength->getValue());
+        echo "  -> ADDRESS: $address\n";
+
+        $portShort = unpack('nshort', substr($data, 0, 2))['short'];
+        $data = substr($data, 2);
+        echo "  -> PORT: {$portShort}\n";
+
+        $nextVarInt = VarInt::readUnsignedVarInt($data);
+        echo "  -> NEXT STAGE #: {$nextVarInt->getValue()}\n";
 
         try {
-            $nextStateInt = $nextState->getValue();
+            $nextStage = Stage::get($nextVarInt->getValue());
 
-            $stage = Stage::get($nextStateInt);
-            if($stage != Stage::LOGIN() && $stage != Stage::STATUS()) {
-                throw new InvalidDataException('Handshake packet has an invalid stage value');
+            //disconnect if not a valid stage
+            if ($nextStage != Stage::LOGIN() && $nextStage != Stage::STATUS()) {
+                throw new InvalidDataException('Stage must be LOGIN or STATUS on handshake');
             }
 
-            return new HandshakePacket($protocolVersion->getValue(), $serverAddress->getValue(), $serverPort->getValue(), $stage);
-        } catch(InvalidArgumentException $ex) {
-            throw new InvalidDataException('Handshake packet has an invalid stage value');
+            return new HandshakePacket($versionVarInt->getValue(), $address, $portShort, $nextStage);
+        } catch (InvalidArgumentException $ex) {
+            throw new InvalidDataException('Stage is not a valid number');
         }
     }
 } 
