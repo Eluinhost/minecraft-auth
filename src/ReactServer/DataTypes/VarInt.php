@@ -1,7 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\ReactServer\DataTypes;
 
-use PublicUHC\MinecraftAuth\Server\InvalidDataException;
+use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 
 class VarInt extends DataType {
 
@@ -11,7 +11,7 @@ class VarInt extends DataType {
      * @param $fd resource the stream to write to
      * @param $data String the data to write
      * @param $length int the length of the data
-     * @throws \PublicUHC\MinecraftAuth\Server\InvalidDataException
+     * @throws InvalidDataException
      */
     private static function write($fd, $data, $length)
     {
@@ -27,7 +27,7 @@ class VarInt extends DataType {
      * @param $fd resource the stream to read from
      * @param $length int the length to read
      * @return string the read bytes
-     * @throws \PublicUHC\MinecraftAuth\Server\InvalidDataException
+     * @throws InvalidDataException
      */
     private static function read($fd, $length)
     {
@@ -79,7 +79,7 @@ class VarInt extends DataType {
      * @param $data int the value to write
      * @param null $connection if null nothing happens, if set will write the data to the stream
      * @return VarInt the encoded value
-     * @throws \PublicUHC\MinecraftAuth\Server\InvalidDataException
+     * @throws InvalidDataException
      */
     public static function writeUnsignedVarInt($data, $connection = null) {
         if($data < 0) {
