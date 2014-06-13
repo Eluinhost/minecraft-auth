@@ -36,11 +36,11 @@ class ReactServer {
     {
         $newClient = new Client($connection);
 
-        $connection->on('end', function(Connection $connection) use (&$client) {
+        $connection->on('end', function(Connection $connection) use (&$newClient) {
             for($i = 0; $i<count($this->clients); $i++) {
                 /** @var $checkclient Client */
                 $checkclient = $this->clients[$i];
-                if($checkclient == $client) {
+                if($checkclient == $newClient) {
                     unset($this->clients[$i]);
                     $this->clients = array_values($this->clients);
                     echo "A client disconnected. Now there are total ". count($this->clients) . " clients.\n";
