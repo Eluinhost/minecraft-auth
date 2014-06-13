@@ -36,7 +36,7 @@ class ReactServer {
     {
         $newClient = new Client($connection);
 
-        $connection->on('end', function(Connection $connection) use (&$newClient) {
+        $connection->on('close', function(Connection $connection) use (&$newClient) {
             for($i = 0; $i<count($this->clients); $i++) {
                 /** @var $checkclient Client */
                 $checkclient = $this->clients[$i];
