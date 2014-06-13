@@ -85,6 +85,7 @@ class VarInt extends DataType {
         if($data < 0) {
             throw new InvalidDataException('Cannot write negative values');
         }
+        $orig = $data;
 
         //single bytes don't need encoding
         if ($data < 0x80) {
@@ -108,6 +109,6 @@ class VarInt extends DataType {
         if($connection != null)
             self::write($connection, $bytes, strlen($bytes));
 
-        return new VarInt($data, $bytes, strlen($bytes));
+        return new VarInt($orig, $bytes, strlen($bytes));
     }
 } 
