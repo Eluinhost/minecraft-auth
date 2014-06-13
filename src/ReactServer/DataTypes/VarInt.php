@@ -14,9 +14,6 @@ class VarInt extends DataType {
      */
     private static function read($fd, $length)
     {
-        // Protect against 0 byte reads when an EOF
-        if ($length < 1) return '';
-
         $bytes = fread($fd, $length);
         if (false === $bytes) {
             return false;
@@ -40,7 +37,7 @@ class VarInt extends DataType {
         $result = $shift = 0;
         do {
             $readValue = self::read($fd, 1);
-            if(false === $readValue) {
+            if(false === $readValue || $readValue == null) {
                 return false;
             }
             $original .= $readValue;
