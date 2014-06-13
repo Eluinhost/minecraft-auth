@@ -4,6 +4,7 @@ namespace PublicUHC\MinecraftAuth\ReactServer;
 use Exception;
 use InvalidArgumentException;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 use PublicUHC\MinecraftAuth\Server\InvalidDataException;
 use React\Socket\Connection;
@@ -39,37 +40,11 @@ class Client {
                 case Stage::HANDSHAKE():
                     switch ($packetIDVarInt->getValue()) {
                         case 0:
-                            $versionVarInt = VarInt::readUnsignedVarInt($data);
-                            $data = substr($data, $packetIDVarInt->getDataLength());
-                            echo "  -> VERSION: {$versionVarInt->getValue()}\n";
+                            $handshake = HandshakePacket::fromStreamData($data);
 
-                            $addressStringLength = VarInt::readUnsignedVarInt($data);
-                            $data = substr($data, $addressStringLength->getDataLength());
-
-                            $address = substr($data, 0, $addressStringLength->getValue());
-                            $data = substr($data, $addressStringLength->getValue());
-                            echo "  -> ADDRESS: $address\n";
-
-                            $portShort = unpack('nshort', substr($data, 0, 2))['short'];
-                            $data = substr($data, 2);
-                            echo "  -> PORT: {$portShort}\n";
-
-                            $nextVarInt = VarInt::readUnsignedVarInt($data);
-                            echo "  -> NEXT STAGE #: {$nextVarInt->getValue()}\n";
-
-                            try {
-                                $nextStage = Stage::get($nextVarInt->getValue());
-
-                                //disconnect if not a valid stage
-                                if ($nextStage != Stage::LOGIN() && $nextStage != Stage::STATUS()) {
-                                    $this->disconnect();
-                                }
-
-                                $this->stage = $nextStage;
-                            } catch (InvalidArgumentException $ex) {
-                                //disconnect, not a stage number
-                                $this->disconnect();
-                            }
+                            //switch stage
+                            echo "  -> SWITCHING TO STAGE: {$handshake->getNextStage()->getName()}\n";
+                            $this->stage = $handshake->getNextStage();
                             break;
                         default:
                             throw new InvalidDataException('Packet not implemented');
