@@ -20,71 +20,91 @@ class Client {
 
     public function onData($data, Connection $connection)
     {
-        echo "NEW DATA: ".bin2hex($data)."\n";
+        try {
+            echo "NEW DATA: " . bin2hex($data) . "\n";
 
-        $this->buffer .= $data;
+            $this->buffer .= $data;
 
-        do {
+            do {
+                echo "START PROCESS BUFFER " . bin2hex($this->buffer) . "\n";
 
-            echo "START PROCESS BUFFER " . bin2hex($this->buffer) . "\n";
+                $packetLengthVarInt = VarInt::readUnsignedVarInt($data);
+                echo "-> PACKET LENGTH: {$packetLengthVarInt->getValue()}\n";
 
-            $packetLengthVarInt = VarInt::readUnsignedVarInt($data);
-            echo "-> PACKET LENGTH: {$packetLengthVarInt->getValue()}\n";
+                //if we don't have enough data to read the entire packet wait for more data to enter
+                if (false == $packetLengthVarInt || strlen($this->buffer) < ($packetLengthVarInt->getDataLength() + $packetLengthVarInt->getValue())) {
+                    echo "NOT ENOUGH DATA TO READ PACKET\n";
+                    return;
+                }
 
-            //if we don't have enough data to read the entire packet wait for more data to enter
-            if (false == $packetLengthVarInt || strlen($this->buffer) < ($packetLengthVarInt->getDataLength() + $packetLengthVarInt->getValue())) {
-                echo "NOT ENOUGH DATA TO READ PACKET\n";
-                return;
-            }
+                //cut the packet length varint out
+                $this->buffer = substr($this->buffer, $packetLengthVarInt->getDataLength());
 
-            $this->buffer = substr($this->buffer, $packetLengthVarInt->getDataLength());
+                //the data with the packet ID
+                $packetDataWithPacketID = substr($this->buffer, 0, $packetLengthVarInt->getValue());
 
-            $packetIDVarInt = VarInt::readUnsignedVarInt($this->buffer);
-            $this->buffer = substr($this->buffer, $packetIDVarInt->getDataLength());
-            echo "-> PACKET ID: {$packetIDVarInt->getValue()}, STAGE: {$this->stage->getName()}\n";
+                //cut out the packet data from the buffer
+                $this->buffer = substr($this->buffer, $packetLengthVarInt->getValue());
 
-            switch ($this->stage) {
-                case Stage::HANDSHAKE():
-                    switch ($packetIDVarInt->getValue()) {
-                        case 0:
-                            $handshake = HandshakePacket::fromStreamData($this->buffer);
+                $packetID = VarInt::readUnsignedVarInt($packetDataWithPacketID);
 
-                            //switch stage
-                            echo "  -> SWITCHING TO STAGE: {$handshake->getNextStage()->getName()}\n";
-                            $this->stage = $handshake->getNextStage();
-                            break;
-                        default:
-                            throw new InvalidDataException('Packet not implemented');
-                    }
-                    break;
-                case Stage::STATUS():
-                    switch ($packetIDVarInt->getValue()) {
-                        case 0:
-                            //status request packet, no data
-                            $response = new StatusResponsePacket();
-                            $response->setDescription('Test Server')
-                                ->setMaxPlayers(10)
-                                ->setOnlineCount(0)
-                                ->setProtocol(5)
-                                ->setVersion('1.7.9');
+                //just the data
+                $packetData = substr($packetDataWithPacketID, $packetID->getDataLength());
 
-                            $connection->write($response->encode());
-                            break;
-                        case 1:
-                            //ping
-                            echo "PING DATA: ".bin2hex($this->buffer)."\n";
-                            break;
-                        default:
-                            throw new InvalidDataException('Packet not implemented');
-                    }
-                    break;
-                default:
-                    throw new InvalidDataException('Unknown stage');
-            }
+                $this->processPacket($packetID->getValue(), $packetData, $connection);
 
-            $len = strlen($this->buffer);
-            $data = bin2hex($this->buffer);
-            echo "FINISHED PACKET PROCESSING, EXTRA DATA: $data LEN $len\n";
-        }while(strlen($this->buffer) > 0);
+                $len = strlen($this->buffer);
+                $data = bin2hex($this->buffer);
+                echo "FINISHED PACKET PROCESSING, EXTRA DATA: $data LEN $len\n";
+            } while (strlen($this->buffer) > 0);
+        } catch (\Exception $ex) {
+            echo $ex->getTraceAsString();
+            $connection->end();
+        }
+    }
+
+    private function processPacket($id, $data, Connection $connection)
+    {
+        echo "-> PACKET ID: $id, STAGE: {$this->stage->getName()}\n";
+        switch ($this->stage) {
+            case Stage::HANDSHAKE():
+                switch ($id) {
+                    case 0:
+                        $handshake = HandshakePacket::fromStreamData($data);
+
+                        //TODO check protocol e.t.c.
+
+                        //switch stage
+                        echo "  -> SWITCHING TO STAGE: {$handshake->getNextStage()->getName()}\n";
+                        $this->stage = $handshake->getNextStage();
+                        break;
+                    default:
+                        throw new InvalidDataException('Packet not implemented');
+                }
+                break;
+            case Stage::STATUS():
+                switch ($id) {
+                    case 0:
+                        //status request packet, no data
+                        $response = new StatusResponsePacket();
+                        $response->setDescription('Test Server')
+                            ->setMaxPlayers(10)
+                            ->setOnlineCount(0)
+                            ->setProtocol(5)
+                            ->setVersion('1.7.9');
+
+                        $connection->write($response->encode());
+                        break;
+                    case 1:
+                        //ping
+                        echo "PING DATA: ".bin2hex($this->buffer)."\n";
+                        break;
+                    default:
+                        throw new InvalidDataException('Packet not implemented');
+                }
+                break;
+            default:
+                throw new InvalidDataException('Unknown stage');
+        }
     }
 } 
