@@ -4,6 +4,7 @@ namespace PublicUHC\MinecraftAuth\ReactServer;
 use Exception;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
+use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 use PublicUHC\MinecraftAuth\Server\InvalidDataException;
 use React\Socket\Connection;
@@ -50,7 +51,22 @@ class Client {
                     }
                     break;
                 case Stage::STATUS():
-                    throw new InvalidDataException('Not implemented');
+                    switch ($packetIDVarInt->getValue()) {
+                        case 0:
+                            //status request packet, no data
+                            $response = new StatusResponsePacket();
+                            $response->setDescription('Test Server')
+                                ->setMaxPlayers(10)
+                                ->setOnlineCount(0)
+                                ->setProtocol(5)
+                                ->setVersion('1.7.9');
+
+                            $this->socket->write($response->encode());
+                            break;
+                        default:
+                            throw new InvalidDataException('Packet not implemented');
+                    }
+                    break;
                 default:
                     throw new InvalidDataException('Unknown stage');
             }
