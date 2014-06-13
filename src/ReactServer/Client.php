@@ -93,7 +93,7 @@ class Client {
                             ->setProtocol(5)
                             ->setVersion('1.7.9');
 
-                        $connection->write($response->encode());
+                        $connection->end($response->encode());
                         break;
                     case 1:
                         //ping
