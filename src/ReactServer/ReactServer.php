@@ -34,11 +34,20 @@ class ReactServer {
 
     public function onConnection(Connection $connection)
     {
-        $connection->uuid = uniqid ('', true);
-
         $newClient = new Client($connection);
 
-        $connection->on('end', [$this, 'removeClientConnection']);
+        $connection->on('end', function(Connection $connection) use (&$client) {
+            for($i = 0; $i<count($this->clients); $i++) {
+                /** @var $checkclient Client */
+                $checkclient = $this->clients[$i];
+                if($checkclient == $client) {
+                    unset($this->clients[$i]);
+                    $this->clients = array_values($this->clients);
+                    echo "A client disconnected. Now there are total ". count($this->clients) . " clients.\n";
+                    return;
+                }
+            }
+        });
 
         $connection->on('error', function($error, $connection) {
             /** @var $connection Connection */
@@ -49,18 +58,5 @@ class ReactServer {
         $this->clients[] = $newClient;
         $count = count($this->clients);
         echo "New client conected: {$connection->getRemoteAddress()}. Clients online: $count.\n";
-    }
-
-    public function removeClientConnection(Connection $connection) {
-        for($i = 0; $i<count($this->clients); $i++) {
-            /** @var $client Client */
-            $client = $this->clients[$i];
-            if($connection->uuid == $client->getSocket()->uuid) {
-                unset($this->clients[$i]);
-                $this->clients = array_values($this->clients);
-                echo "A client disconnected. Now there are total ". count($this->clients) . " clients.\n";
-                return;
-            }
-        }
     }
 } 
