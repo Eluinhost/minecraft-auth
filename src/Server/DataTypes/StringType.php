@@ -25,4 +25,11 @@ class StringType extends DataType {
         }
         return new StringType($data, $lengthVarInt->getEncoded() . $data, $stringLength + $lengthVarInt->getDataLength());
     }
+
+    public static function fromString($string)
+    {
+        $length = VarInt::readUnsignedVarInt(strlen($string));
+
+        return new StringType($string, $length->getEncoded() . $string, $length->getDataLength() + strlen($string));
+    }
 } 

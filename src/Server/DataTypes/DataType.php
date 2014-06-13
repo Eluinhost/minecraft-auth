@@ -5,6 +5,11 @@ abstract class DataType {
 
     private $value, $encoded, $dataLength;
 
+    /**
+     * @param $value String the decoded value
+     * @param $encoded String the encoded value
+     * @param $dataLength int the length of the encoded data
+     */
     public function __construct($value, $encoded, $dataLength)
     {
         $this->value = $value;
