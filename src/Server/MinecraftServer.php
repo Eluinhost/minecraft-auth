@@ -54,6 +54,7 @@ class MinecraftServer {
                 }
                 unset($this->connections[$i]);
                 $this->connections = array_values($this->connections);
+                echo "A client disconnected. Now there are total ". count($this->connections) . " clients.\n";
                 return;
             }
         }
@@ -72,9 +73,11 @@ class MinecraftServer {
             //add all of the client sockets
             /** @var $connection Client */
             foreach($this->connections as $connection) {
-                if($connection->getConnection() != null) {
-                    $read[] = $connection->getConnection();
+                if($connection->getConnection() == null) {
+                    $this->removeClient($connection);
+                    continue;
                 }
+                $read[] = $connection->getConnection();
             }
 
             //check streams for read/write with timeout of 5 seconds
