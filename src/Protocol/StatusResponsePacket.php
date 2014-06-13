@@ -164,7 +164,7 @@ class StatusResponsePacket {
             ]);
         }
 
-        $jsonString = json_encode($payload);
+        $jsonString = utf8_encode(json_encode($payload));
         $jsonStringLengthVarInt = VarInt::writeUnsignedVarInt(strlen($jsonString));
         $jsonObjectEncoded = $jsonStringLengthVarInt->getEncoded() . $jsonString;
 
@@ -173,7 +173,7 @@ class StatusResponsePacket {
         $packetLengthVarInt = VarInt::writeUnsignedVarInt($packetIDVarInt->getDataLength() + strlen($jsonObjectEncoded));
 
         $encoded = $packetLengthVarInt->getEncoded() . $packetIDVarInt->getEncoded() . $jsonObjectEncoded;
-        echo 'ENCODED RESPONSE: ' . bin2hex($encoded) . "\n";
+        echo 'ENCODED RESPONSE: ' . bin2hex($encoded) . '/' . $encoded . "\n";
         return $encoded;
     }
 } 
