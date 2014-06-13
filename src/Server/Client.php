@@ -67,22 +67,25 @@ class Client {
     {
         //packet length - VarInt - length of the data + packetID
         $packetLength = VarInt::readUnsignedVarInt($this->connection);
-        echo "Packet Length: {$packetLength->getValue()}\n";
+        echo "-> Packet bytes: {$packetLength->getValue()}\n";
 
         //packet ID - the ID of the packet, relevant to each stage?
         $packetIDInt = VarInt::readUnsignedVarInt($this->connection);
         $packetID = $packetIDInt->getValue();
-        echo "Packet ID: $packetID\n";
+        echo '-> Packet ID: 0x'. dechex($packetID) ."\n";
 
         switch($this->stage) {
             case Stage::HANDSHAKE():
                 switch($packetID) {
                     case 0:
-                        //handshake packet
+                        echo "-> HANDSHAKE - HANDSHAKE\n";
                         $handshake = HandshakePacket::fromStream($this->connection);
+
+                        //var_dump($handshake);
 
                         //switch to the requested stage
                         $this->stage = $handshake->getNextStage();
+                        echo 'Switching to stage: ' . $this->stage->getName() . "\n";
                         break;
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (HANDSHAKE)");
@@ -97,8 +100,8 @@ class Client {
             case Stage::STATUS():
                 switch($packetID) {
                     case 0:
+                        echo "-> STATUS - REQUEST\n";
                         //request packet
-                        //TODO send status response
                         $response = new StatusResponsePacket();
                         $response->setDescription('Test Server')
                             ->setMaxPlayers(10)
@@ -106,7 +109,14 @@ class Client {
                             ->setProtocol(5)
                             ->setVersion('1.7.9');
 
-                        $response->writeToStream($this->connection);
+                        $encoded = $response->encode();
+                        if(strlen($encoded) != fwrite($this->connection, $encoded, strlen($encoded))) {
+                            throw new InvalidDataException('Cannot write packet');
+                        }
+                        break;
+                    case 1:
+                        echo "-> STATUS - PING\n";
+                        $this->close();
                         break;
                     default:
                         throw new InvalidDataException("$packetID is not a valid packet in this stage (STATUS)");
