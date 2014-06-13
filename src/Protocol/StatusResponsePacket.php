@@ -172,6 +172,8 @@ class StatusResponsePacket {
 
         $packetLengthVarInt = VarInt::writeUnsignedVarInt($packetIDVarInt->getDataLength() + strlen($jsonObjectEncoded));
 
-        return $packetLengthVarInt->getEncoded() . $packetIDVarInt->getEncoded() . $jsonObjectEncoded;
+        $encoded = $packetLengthVarInt->getEncoded() . $packetIDVarInt->getEncoded() . $jsonObjectEncoded;
+        echo 'ENCODED RESPONSE: ' . bin2hex($encoded) . "\n";
+        return $encoded;
     }
 } 

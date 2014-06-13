@@ -1,5 +1,5 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Server\DataTypes;
+namespace PublicUHC\MinecraftAuth\ReactServer\DataTypes;
 
 abstract class DataType {
 

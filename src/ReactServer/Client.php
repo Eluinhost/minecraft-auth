@@ -5,8 +5,8 @@ use Exception;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
-use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
-use PublicUHC\MinecraftAuth\Server\InvalidDataException;
+use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 use React\Socket\Connection;
 
 class Client {
@@ -61,7 +61,11 @@ class Client {
                                 ->setProtocol(5)
                                 ->setVersion('1.7.9');
 
-                            $this->socket->write($response->encode());
+                            //$this->socket->write($response->encode());
+                            break;
+                        case 1:
+                            //ping
+                            echo "PING DATA: $data";
                             break;
                         default:
                             throw new InvalidDataException('Packet not implemented');

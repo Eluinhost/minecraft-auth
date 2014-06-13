@@ -3,11 +3,8 @@ namespace PublicUHC\MinecraftAuth\Protocol;
 
 use InvalidArgumentException;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
-use PublicUHC\MinecraftAuth\Server\DataTypes\StringType;
-use PublicUHC\MinecraftAuth\Server\DataTypes\UnsignedShort;
-use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
-use PublicUHC\MinecraftAuth\Server\InvalidDataException;
-use PublicUHC\MinecraftAuth\Server\NoDataException;
+use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 
 class HandshakePacket {
 
@@ -108,7 +105,6 @@ class HandshakePacket {
      * Reads a handshake packet data from the stream
      *
      * @param $data String
-     * @throws NoDataException if not data ended up null in the stream
      * @throws InvalidDataException if not valid packet structure
      * @return HandshakePacket
      */
