@@ -1,7 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Protocol;
 
-use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
 
 class StatusResponsePacket {
 
