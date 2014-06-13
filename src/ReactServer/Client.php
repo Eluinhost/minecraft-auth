@@ -2,7 +2,6 @@
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
 use Exception;
-use InvalidArgumentException;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
