@@ -19,7 +19,7 @@ class StringType extends DataType {
         $lengthVarInt = VarInt::readUnsignedVarInt($connection);
         $stringLength = $lengthVarInt->getValue();
 
-        $data = @fread($connection, $stringLength);
+        $data = fread($connection, $stringLength);
         if(!$data) {
             throw new NoDataException();
         }
@@ -28,7 +28,7 @@ class StringType extends DataType {
 
     public static function fromString($string)
     {
-        $length = VarInt::readUnsignedVarInt(strlen($string));
+        $length = VarInt::writeUnsignedVarInt(strlen($string));
 
         return new StringType($string, $length->getEncoded() . $string, $length->getDataLength() + strlen($string));
     }
