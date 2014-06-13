@@ -29,14 +29,13 @@ class Client {
             echo "START PROCESS BUFFER " . bin2hex($this->buffer) . "\n";
 
             $packetLengthVarInt = VarInt::readUnsignedVarInt($data);
+            echo "-> PACKET LENGTH: {$packetLengthVarInt->getValue()}\n";
 
             //if we don't have enough data to read the entire packet wait for more data to enter
             if (false == $packetLengthVarInt || strlen($this->buffer) < ($packetLengthVarInt->getDataLength() + $packetLengthVarInt->getValue())) {
                 echo "NOT ENOUGH DATA TO READ PACKET\n";
                 return;
             }
-
-            echo "-> PACKET LENGTH: {$packetLengthVarInt->getValue()}\n";
 
             $this->buffer = substr($this->buffer, $packetLengthVarInt->getDataLength());
 
