@@ -94,7 +94,7 @@ class Client {
                             ->setVersion('1.7.9');
 
                         $connection->end($response->encode());
-                        break;
+                        return; //we're done here
                     case 1:
                         //ping
                         echo "PING DATA: ".bin2hex($this->buffer)."\n";
