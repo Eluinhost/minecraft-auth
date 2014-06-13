@@ -6,60 +6,30 @@ use PublicUHC\MinecraftAuth\Server\NoDataException;
 
 class VarInt extends DataType {
 
-    public static function fromInt($int)
+    /**
+     * Writes to the stream
+     *
+     * @param $fd resource the stream to write to
+     * @param $data String the data to write
+     * @param $length int the length of the data
+     * @throws \PublicUHC\MinecraftAuth\Server\InvalidDataException
+     */
+    private static function write($fd, $data, $length)
     {
-        $string = decbin($int);
-        if (strlen($string) < 8)
-        {
-            $hexstring = dechex(bindec($string));
-            if (strlen($hexstring) % 2 == 1)
-                $hexstring = '0' . $hexstring;
-            return self::hex_to_str($hexstring);
+        $written = fwrite($fd, $data, $length);
+        if ($written !== $length) {
+            throw new InvalidDataException();
         }
-
-        // split it and insert the mb byte
-        $string_array = array();
-        $pre = '1';
-        while (strlen($string) > 0)
-        {
-            if (strlen($string) < 8)
-            {
-                $string = substr('00000000', 0, 7 - strlen($string) % 7) . $string;
-                $pre = '0';
-            }
-            $string_array[] = $pre . substr($string, strlen($string) - 7, 7);
-            $string = substr($string, 0, strlen($string) - 7);
-            $pre = '1';
-            if ($string == '0000000')
-                break;
-        }
-
-        $hexstring = '';
-        foreach ($string_array as $string)
-        {
-            $hexstring .= sprintf('%02X', bindec($string));
-        }
-
-
-        return self::hex_to_str($hexstring);
     }
 
     /**
-     * Converts hex 2 ascii
-     * @param String $hex - the hex string
-     * @return string
+     * Reads from the stream
+     *
+     * @param $fd resource the stream to read from
+     * @param $length int the length to read
+     * @return string the read bytes
+     * @throws \PublicUHC\MinecraftAuth\Server\InvalidDataException
      */
-    private static function hex_to_str($hex)
-    {
-        $str = '';
-
-        for($i = 0; $i < strlen($hex); $i += 2)
-        {
-            $str .= chr(hexdec(substr($hex, $i, 2)));
-        }
-        return $str;
-    }
-
     private static function read($fd, $length)
     {
         // Protect against 0 byte reads when an EOF
@@ -80,7 +50,8 @@ class VarInt extends DataType {
      * @throws InvalidDataException on invalid data
      * @return VarInt the parsed VarInt
      */
-    public static function readUnsignedVarInt($data) {
+    public static function readUnsignedVarInt($data)
+    {
         $fd = null;
         if (is_resource($data)) {
             $fd = $data;
@@ -98,5 +69,43 @@ class VarInt extends DataType {
         } while ($byte > 0x7f);
 
         return new VarInt($result, $shift);
+    }
+
+    /**
+     * Writes a VarInt
+     *
+     * @param $data int the value to write
+     * @param null $connection if null nothing happens, if set will write the data to the stream
+     * @return int the encoded value
+     * @throws \PublicUHC\MinecraftAuth\Server\InvalidDataException
+     */
+    public static function writeUnsignedVarInt($data, $connection = null) {
+        if($data < 0) {
+            throw new InvalidDataException('Cannot write negative values');
+        }
+
+        //single bytes don't need encoding
+        if ($data < 0x80) {
+            if($connection != null)
+                self::write($connection, chr($data), 1);
+            return $data;
+        }
+
+        $encodedBytes = [];
+        while ($data > 0) {
+            $encodedBytes[] = 0x80 | ($data & 0x7f);
+            $data >>= 7;
+        }
+
+        //remove most sig bit from final value
+        $encodedBytes[count($encodedBytes)-1] &= 0x7f;
+
+        //build the actual bytes from the encoded array
+        $bytes = call_user_func_array('pack', array_merge(array('C*'), $encodedBytes));;
+
+        if($connection != null)
+            self::write($connection, $bytes, strlen($bytes));
+
+        return $bytes;
     }
 } 
