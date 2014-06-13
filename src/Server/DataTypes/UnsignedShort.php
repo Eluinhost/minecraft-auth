@@ -21,7 +21,7 @@ class UnsignedShort extends DataType {
             throw new NoDataException();
         }
         //unsigned short big-endian
-        $data = unpack('nshort', $data)['short'];
-        return new UnsignedShort($data, 2);
+        $decodedData = unpack('nshort', $data)['short'];
+        return new UnsignedShort($decodedData, $data, 2);
     }
 } 

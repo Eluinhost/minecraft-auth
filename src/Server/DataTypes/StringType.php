@@ -16,14 +16,13 @@ class StringType extends DataType {
      */
     public static function fromStream($connection)
     {
-        $lengthInt = VarInt::fromStream($connection);
-
-        $stringLength = $lengthInt->getValue();
+        $lengthVarInt = VarInt::readUnsignedVarInt($connection);
+        $stringLength = $lengthVarInt->getValue();
 
         $data = @fread($connection, $stringLength);
         if(!$data) {
             throw new NoDataException();
         }
-        return new StringType($data, $stringLength + $lengthInt->getDataLength());
+        return new StringType($data, $lengthVarInt->getEncoded() . $data, $stringLength + $lengthVarInt->getDataLength());
     }
 } 

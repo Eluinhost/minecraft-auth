@@ -2,7 +2,6 @@
 namespace PublicUHC\MinecraftAuth\Server\DataTypes;
 
 use PublicUHC\MinecraftAuth\Server\InvalidDataException;
-use PublicUHC\MinecraftAuth\Server\NoDataException;
 
 class VarInt extends DataType {
 
@@ -58,9 +57,12 @@ class VarInt extends DataType {
         } else {
             $fd = fopen('data://text/plain,' . urlencode($data), 'rb');
         }
+        $original = '';
         $result = $shift = 0;
         do {
-            $byte = ord(self::read($fd, 1));
+            $readValue = self::read($fd, 1);
+            $original .= $readValue;
+            $byte = ord($readValue);
             $result |= ($byte & 0x7f) << $shift++ * 7;
 
             if($shift > 5) {
@@ -68,7 +70,7 @@ class VarInt extends DataType {
             }
         } while ($byte > 0x7f);
 
-        return new VarInt($result, $shift);
+        return new VarInt($result, $original, $shift);
     }
 
     /**
@@ -76,7 +78,7 @@ class VarInt extends DataType {
      *
      * @param $data int the value to write
      * @param null $connection if null nothing happens, if set will write the data to the stream
-     * @return int the encoded value
+     * @return VarInt the encoded value
      * @throws \PublicUHC\MinecraftAuth\Server\InvalidDataException
      */
     public static function writeUnsignedVarInt($data, $connection = null) {
@@ -88,7 +90,7 @@ class VarInt extends DataType {
         if ($data < 0x80) {
             if($connection != null)
                 self::write($connection, chr($data), 1);
-            return $data;
+            return new VarInt($data, $data, 1);
         }
 
         $encodedBytes = [];
@@ -106,6 +108,6 @@ class VarInt extends DataType {
         if($connection != null)
             self::write($connection, $bytes, strlen($bytes));
 
-        return $bytes;
+        return new VarInt($data, $bytes, strlen($bytes));
     }
 } 
