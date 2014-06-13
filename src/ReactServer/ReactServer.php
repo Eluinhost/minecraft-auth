@@ -34,6 +34,8 @@ class ReactServer {
 
     public function onConnection(Connection $connection)
     {
+        $connection->uuid = uniqid ('', true);
+
         $newClient = new Client($connection);
 
         $connection->on('end', [$this, 'removeClientConnection']);
@@ -53,7 +55,7 @@ class ReactServer {
         for($i = 0; $i<count($this->clients); $i++) {
             /** @var $client Client */
             $client = $this->clients[$i];
-            if($connection == $client->getSocket()) {
+            if($connection->uuid == $client->getSocket()->uuid) {
                 unset($this->clients[$i]);
                 $this->clients = array_values($this->clients);
                 echo "A client disconnected. Now there are total ". count($this->clients) . " clients.\n";
