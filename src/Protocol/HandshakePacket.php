@@ -102,13 +102,13 @@ class HandshakePacket {
     }
 
     /**
-     * Reads a handshake packet data from the stream
+     * Reads a handshake packet from the string, removes parsed data
      *
      * @param $data String
      * @throws InvalidDataException if not valid packet structure
      * @return HandshakePacket
      */
-    public static function fromStreamData($data)
+    public static function fromStreamData(&$data)
     {
         $versionVarInt = VarInt::readUnsignedVarInt($data);
         $data = substr($data, $versionVarInt->getDataLength());
