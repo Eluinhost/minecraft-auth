@@ -1,7 +1,6 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Protocol;
 
-use PublicUHC\MinecraftAuth\Server\DataTypes\StringType;
 use PublicUHC\MinecraftAuth\Server\DataTypes\VarInt;
 
 class StatusResponsePacket {
@@ -165,10 +164,14 @@ class StatusResponsePacket {
             ]);
         }
 
-        $jsonPayload = StringType::fromString(json_encode($payload));
-        $packetID = VarInt::writeUnsignedVarInt(self::PACKET_ID);
-        $dataLen = VarInt::writeUnsignedVarInt($jsonPayload->getDataLength() + $packetID->getDataLength());
+        $jsonString = json_encode($payload);
+        $jsonStringLengthVarInt = VarInt::writeUnsignedVarInt(strlen($jsonString));
+        $jsonObjectEncoded = $jsonStringLengthVarInt->getEncoded() . $jsonString;
 
-        return $dataLen->getEncoded() . $packetID->getEncoded() . $jsonPayload->getEncoded();
+        $packetIDVarInt = VarInt::writeUnsignedVarInt(self::PACKET_ID);
+
+        $packetLengthVarInt = VarInt::writeUnsignedVarInt($packetIDVarInt->getDataLength() + strlen($jsonObjectEncoded));
+
+        return $packetLengthVarInt->getEncoded() . $packetIDVarInt->getEncoded() . $jsonObjectEncoded;
     }
 } 
