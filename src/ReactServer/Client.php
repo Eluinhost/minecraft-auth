@@ -1,6 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
+use PublicUHC\MinecraftAuth\Protocol\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\PingPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
@@ -67,7 +68,8 @@ class Client {
         } catch (\Exception $ex) {
             echo "EXCEPTION IN PACKET PARSING {$ex->getMessage()}\n";
             echo $ex->getTraceAsString();
-            $connection->close();
+            $dis = new DisconnectPacket('Internal Server Error: '.$ex->getMessage());
+            $connection->end($dis->encode());
         }
     }
 
