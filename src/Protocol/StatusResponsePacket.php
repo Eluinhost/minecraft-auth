@@ -13,7 +13,7 @@ class StatusResponsePacket {
     private $online_count = 0;
     private $online_players = [];
     private $description = 'A Minecraft Server';
-    private $favicon = null;
+    private $favicon = '';
 
     /**
      * @return string the name of the Minecraft version
@@ -165,15 +165,31 @@ class StatusResponsePacket {
         }
 
         $jsonString = utf8_encode(json_encode($payload));
-        $jsonStringLengthVarInt = VarInt::writeUnsignedVarInt(strlen($jsonString));
+        $jsonStringLen = strlen($jsonString);
+        echo " <- STATUS RESPONSE - JSON UTF8 DATA (LEN - $jsonStringLen: $jsonString\n";
+        echo " <- STATUS RESPONSE - JSON UTF8 DATA (HEX): 0x".bin2hex($jsonString)."\n";
+
+        $jsonStringLengthVarInt = VarInt::writeUnsignedVarInt($jsonStringLen);
+        echo " <- STATUS RESPONSE - STRING LENGTH (O): ".$jsonStringLengthVarInt->getValue()."\n";
+        echo " <- STATUS RESPONSE - STRING LENGTH (E): 0x".bin2hex($jsonStringLengthVarInt->getEncoded())."\n";
+
         $jsonObjectEncoded = $jsonStringLengthVarInt->getEncoded() . $jsonString;
+        echo " <- ENCODED JSON OBJECT (RAW): ".$jsonObjectEncoded."\n";
+        echo " <- ENCODED JSON OBJECT (HEX): 0x".bin2hex($jsonObjectEncoded)."\n";
 
         $packetIDVarInt = VarInt::writeUnsignedVarInt(self::PACKET_ID);
+        echo " <- STATUS RESPONSE - PACKET ID: ".self::PACKET_ID."\n";
+        echo " <- STATUS RESPONSE - PACKET ID VARINT (O): ".$packetIDVarInt->getValue()."\n";
+        echo " <- STATUS RESPONSE - PACKET ID VARINT (E): 0x".bin2hex($packetIDVarInt->getEncoded())."\n";
 
         $packetLengthVarInt = VarInt::writeUnsignedVarInt($packetIDVarInt->getDataLength() + strlen($jsonObjectEncoded));
+        echo " <- STATUS RESPONSE - PACKET LENGTH: ".($packetIDVarInt->getDataLength() + strlen($jsonObjectEncoded))."\n";
+        echo " <- STATUS RESPONSE - PACKET LENGTH (O): ".$packetLengthVarInt->getValue()."\n";
+        echo " <- STATUS RESPONSE - PACKET LENGTH (E): 0x".bin2hex($packetLengthVarInt->getEncoded())."\n";
 
         $encoded = $packetLengthVarInt->getEncoded() . $packetIDVarInt->getEncoded() . $jsonObjectEncoded;
-        echo 'ENCODED RESPONSE: ' . bin2hex($encoded) . '/' . $encoded . "\n";
+        echo 'ENCODED RESPONSE (HEX): 0x' . bin2hex($encoded) . "\n";
+        echo "ENCODED RESPONSE (RAW): $encoded\n";
         return $encoded;
     }
 } 
