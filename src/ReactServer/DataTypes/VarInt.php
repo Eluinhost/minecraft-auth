@@ -67,7 +67,7 @@ class VarInt extends DataType {
 
         //single bytes don't need encoding
         if ($data < 0x80) {
-            return new VarInt($data, $data, 1);
+            return new VarInt($data, pack('C', $data), 1);
         }
 
         $encodedBytes = [];
