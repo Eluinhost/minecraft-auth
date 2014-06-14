@@ -1,12 +1,17 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Protocol;
 
+use InvalidArgumentException;
+use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
+
 class HandshakePacket {
 
     private $protocolVersion;
     private $serverAddress;
     private $serverPort;
-    private $nextState;
+    private $nextStage;
 
     /**
      * Create a new Handshake packet (serverbound->handshake 0x00)
@@ -14,14 +19,14 @@ class HandshakePacket {
      * @param $protocolVersion int protocol version
      * @param $serverAddress String server address connecting to
      * @param $serverPort int port connecting to
-     * @param int $nextState next state, 1 (HandshakePacketNextState::STATUS) for status and 2 (HandshakePacketNextState::LOGIN) for starting login
+     * @param Stage $nextStage next stage for the client
      */
-    public function __construct($protocolVersion, $serverAddress, $serverPort, $nextState = GameState::STATUS)
+    public function __construct($protocolVersion, $serverAddress, $serverPort, Stage $nextStage)
     {
         $this->protocolVersion = $protocolVersion;
         $this->serverAddress = $serverAddress;
         $this->serverPort = $serverPort;
-        $this->nextState = $nextState;
+        $this->nextStage = $nextStage;
     }
 
     /**
@@ -79,20 +84,61 @@ class HandshakePacket {
     }
 
     /**
-     * @return int the next stage, uses HandshakePacketNextState constants
+     * @return Stage the next stage, uses HandshakePacketNextState constants
      */
-    public function getNextState()
+    public function getNextStage()
     {
-        return $this->nextState;
+        return $this->nextStage;
     }
 
     /**
-     * @param $nextState int the next
+     * @param $nextStage Stage the next
      * @return $this
      */
-    public function setNextState($nextState)
+    public function setNextStage(Stage $nextStage)
     {
-        $this->nextState = $nextState;
+        $this->nextStage = $nextStage;
         return $this;
+    }
+
+    /**
+     * Reads a handshake packet from the string, removes parsed data
+     *
+     * @param $data String
+     * @throws InvalidDataException if not valid packet structure
+     * @return HandshakePacket
+     */
+    public static function fromStreamData(&$data)
+    {
+        $versionVarInt = VarInt::readUnsignedVarInt($data);
+        $data = substr($data, $versionVarInt->getDataLength());
+        echo "  -> VERSION: {$versionVarInt->getValue()}\n";
+
+        $addressStringLength = VarInt::readUnsignedVarInt($data);
+        $data = substr($data, $addressStringLength->getDataLength());
+
+        $address = substr($data, 0, $addressStringLength->getValue());
+        $data = substr($data, $addressStringLength->getValue());
+        echo "  -> ADDRESS: $address\n";
+
+        $portShort = unpack('nshort', substr($data, 0, 2))['short'];
+        $data = substr($data, 2);
+        echo "  -> PORT: {$portShort}\n";
+
+        $nextVarInt = VarInt::readUnsignedVarInt($data);
+        echo "  -> NEXT STAGE #: {$nextVarInt->getValue()}\n";
+
+        try {
+            $nextStage = Stage::get($nextVarInt->getValue());
+
+            //disconnect if not a valid stage
+            if ($nextStage != Stage::LOGIN() && $nextStage != Stage::STATUS()) {
+                throw new InvalidDataException('Stage must be LOGIN or STATUS on handshake');
+            }
+
+            return new HandshakePacket($versionVarInt->getValue(), $address, $portShort, $nextStage);
+        } catch (InvalidArgumentException $ex) {
+            throw new InvalidDataException('Stage is not a valid number');
+        }
     }
 } 
