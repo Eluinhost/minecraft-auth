@@ -95,7 +95,7 @@ class Client {
                     case 0:
                         //status request packet, no data
                         $response = new StatusResponsePacket();
-                        $response->setDescription('Test PHP Server')
+                        $response->setDescription('§4▁§e▂§4▃§e▄§4▅§e▆§4▇§e█ §4§l   PHPAuthServer   §e█§4▇§e▆§4▅§e▄§4▃§e▂§4▁ §c▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔')
                             ->setMaxPlayers(-1)
                             ->setOnlineCount(-1)
                             ->setProtocol(5)
