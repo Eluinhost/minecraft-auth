@@ -1,6 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
+use PublicUHC\MinecraftAuth\Protocol\PingPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
@@ -64,6 +65,7 @@ class Client {
                 echo "FINISHED PACKET PROCESSING, EXTRA DATA: $data LEN $len\n";
             } while (strlen($this->buffer) > 0);
         } catch (\Exception $ex) {
+            echo "EXCEPTION IN PACKET PARSING {$ex->getMessage()}\n";
             echo $ex->getTraceAsString();
             $connection->close();
         }
@@ -93,17 +95,20 @@ class Client {
                     case 0:
                         //status request packet, no data
                         $response = new StatusResponsePacket();
-                        $response->setDescription('Test Server')
-                            ->setMaxPlayers(10)
-                            ->setOnlineCount(0)
+                        $response->setDescription('Test PHP Server')
+                            ->setMaxPlayers(-1)
+                            ->setOnlineCount(-1)
                             ->setProtocol(5)
-                            ->setVersion('1.7.9');
+                            ->setVersion('1.7.6+');
 
                         $connection->write($response->encode());
                         break;
                     case 1:
                         //ping
-                        echo "PING DATA: ".bin2hex($this->buffer)."\n";
+                        echo "PING DATA: ".bin2hex($data)."\n";
+
+                        $ping = new PingPacket($data);
+                        $connection->end($ping->encode());
                         break;
                     default:
                         throw new InvalidDataException('Packet not implemented');
