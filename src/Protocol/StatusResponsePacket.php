@@ -13,7 +13,7 @@ class StatusResponsePacket {
     private $online_count = 0;
     private $online_players = [];
     private $description = 'A Minecraft Server';
-    private $favicon = '';
+    private $favicon = null;
 
     /**
      * @return string the name of the Minecraft version
@@ -155,8 +155,10 @@ class StatusResponsePacket {
             'description'   => [
                 'text'  => $this->description
             ],
-            'favicon'   => $this->favicon
         ];
+        if($this->favicon != null) {
+            $payload['favicon'] = $this->favicon;
+        }
         foreach($this->online_players as $player) {
             array_push($payload['players']['sample'], [
                 'name'  => $player,
