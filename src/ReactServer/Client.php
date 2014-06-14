@@ -99,8 +99,8 @@ class Client {
                             ->setProtocol(5)
                             ->setVersion('1.7.9');
 
-                        $connection->end($response->encode());
-                        return; //we're done here
+                        $connection->write($response->encode());
+                        break;
                     case 1:
                         //ping
                         echo "PING DATA: ".bin2hex($this->buffer)."\n";
