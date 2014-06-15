@@ -86,7 +86,7 @@ class EncryptionRequestPacket {
         echo " <- ENCRYPTION REQUEST - PACKET ID VARINT (O): ".$packetIDVarInt->getValue()."\n";
         echo " <- ENCRYPTION REQUEST - PACKET ID VARINT (E): 0x".bin2hex($packetIDVarInt->getEncoded())."\n";
 
-        $serverIDLength = strlen($this->serverID);
+        $serverIDLength = strlen($this->getServerID());
         echo " <- ENCRYPTION REQUEST - DATA (LEN - $serverIDLength: {$this->getServerID()}\n";
         echo " <- ENCRYPTION REQUEST - DATA (HEX): 0x".bin2hex($this->getServerID())."\n";
 
@@ -110,6 +110,7 @@ class EncryptionRequestPacket {
         $tokenLength = pack('n', strlen($encodedToken));
         echo " <- TOKEN LENGTH (o): ".strlen($encodedToken)."\n";
         echo " <- TOKEN LENGTH (E) 0x".bin2hex($tokenLength)."\n";
+        echo " <- TOKEN VALUE (E) 0x".bin2hex($encodedToken)."\n";
 
         $packetLength = $packetIDVarInt->getDataLength()
             + $serverIDLength + $serverIDLengthVarInt->getDataLength()
