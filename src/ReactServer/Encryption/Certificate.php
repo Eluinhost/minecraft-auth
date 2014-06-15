@@ -15,11 +15,13 @@ class Certificate {
         $keys = $this->privateKey->createKey();
         $privKey = $keys['privatekey'];
         $this->privateKey->loadKey($privKey);
+        $this->privateKey->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
 
         $pubKey = $keys['publickey'];
         $this->publicKey = new Crypt_RSA();
         $this->publicKey->loadKey($pubKey);
         $this->publicKey->setPublicKey();
+        $this->publicKey->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
     }
 
     /**
