@@ -44,6 +44,10 @@ class EncryptionResponsePacket {
         return $this;
     }
 
+    /**
+     * @param $data
+     * @return EncryptionResponsePacket
+     */
     public static function fromStreamData($data)
     {
         $secretLength = unpack('nshort', substr($data, 0, 2))['short'];
