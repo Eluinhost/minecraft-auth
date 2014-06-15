@@ -127,25 +127,43 @@ class Client {
                         //login start packet
                         //TODO read the username
                         $request = new EncryptionRequestPacket();
-                        $serverID = $request->getRandomServerID();
-                        $verifyToken = $request->getRandomServerID();
+                        $this->serverID = $request->getRandomServerID();
+                        $this->verifyToken = $request->getRandomServerID();
 
                         $publicKey = $this->certificate->getPublicKey()->getPublicKey();
                         $publicKey = substr($publicKey, 28, -26);
                         $request->setPublicKey($publicKey)
-                            ->setServerID($serverID)
-                            ->setToken($verifyToken);
+                            ->setServerID($this->serverID)
+                            ->setToken($this->verifyToken);
 
                         $connection->write($request->encode());
                         break;
                     case 1:
                         //encryption response
-                        $response = EncryptionResponsePacket::fromStreamData($data);
+                        $encryptionResponse = EncryptionResponsePacket::fromStreamData($data);
+
+                        $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
+
+                        echo "OUR TOKEN: ".bin2hex($verifyToken)."\n";
+                        echo "THEIR TOKEN ".bin2hex($encryptionResponse->getToken())."\n";
+
+                        //TODO verify encryption success
+
+                        $secret = $this->certificate->getPrivateKey()->decrypt($encryptionResponse->getSecret());
+
+                        echo "ENCRYPT SECRET ".bin2hex($encryptionResponse->getSecret())."\n";
+                        echo "DECRYPT SECRET ".bin2hex($secret)."\n";
 
                         //TODO check auth servers and fire the listeners
 
                         $disconnect = new DisconnectPacket('SOME FUCKING MESSAGE OR SOMETHING');
-                        $connection->write($disconnect->encode());
+                        $connection->write(mcrypt_encrypt(
+                            MCRYPT_RIJNDAEL_128,
+                            $secret,
+                            $disconnect->encode(),
+                            MCRYPT_MODE_CFB,
+                            $secret
+                        ));
                         break;
                     default:
                         throw new InvalidDataException('Unknown packet ID for stage');
