@@ -2,22 +2,27 @@
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
 use PublicUHC\MinecraftAuth\Protocol\DisconnectPacket;
+use PublicUHC\MinecraftAuth\Protocol\EncryptionRequestPacket;
+use PublicUHC\MinecraftAuth\Protocol\EncryptionResponsePacket;
 use PublicUHC\MinecraftAuth\Protocol\PingPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
 use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\Socket\Connection;
 
 class Client {
 
     private $stage;
     private $buffer = '';
+    private $certificate;
 
-    public function __construct(Connection $socket)
+    public function __construct(Connection $socket, Certificate $certificate)
     {
         $socket->on('data', [$this, 'onData']);
         $this->stage = Stage::HANDSHAKE();
+        $this->certificate = $certificate;
     }
 
     public function onData($data, Connection $connection)
@@ -114,6 +119,54 @@ class Client {
                         break;
                     default:
                         throw new InvalidDataException('Packet not implemented');
+                }
+                break;
+            case Stage::LOGIN():
+                switch ($id) {
+                    case 0:
+                        //login start packet
+                        //TODO read the username
+                        $request = new EncryptionRequestPacket();
+                        $this->serverID = $request->getRandomServerID();
+                        $this->verifyToken = $request->getRandomServerID();
+
+                        $publicKey = $this->certificate->getPublicKey()->getPublicKey();
+                        $publicKey = substr($publicKey, 28, -26);
+                        $request->setPublicKey($publicKey)
+                            ->setServerID($this->serverID)
+                            ->setToken($this->verifyToken);
+
+                        $connection->write($request->encode());
+                        break;
+                    case 1:
+                        //encryption response
+                        $encryptionResponse = EncryptionResponsePacket::fromStreamData($data);
+
+                        $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
+
+                        echo "OUR TOKEN: ".bin2hex($verifyToken)."\n";
+                        echo "THEIR TOKEN ".bin2hex($encryptionResponse->getToken())."\n";
+
+                        //TODO verify encryption success
+
+                        $secret = $this->certificate->getPrivateKey()->decrypt($encryptionResponse->getSecret());
+
+                        echo "ENCRYPT SECRET ".bin2hex($encryptionResponse->getSecret())."\n";
+                        echo "DECRYPT SECRET ".bin2hex($secret)."\n";
+
+                        //TODO check auth servers and fire the listeners
+
+                        $disconnect = new DisconnectPacket('SOME FUCKING MESSAGE OR SOMETHING');
+                        $connection->write(mcrypt_encrypt(
+                            MCRYPT_RIJNDAEL_128,
+                            $secret,
+                            $disconnect->encode(),
+                            MCRYPT_MODE_CFB,
+                            $secret
+                        ));
+                        break;
+                    default:
+                        throw new InvalidDataException('Unknown packet ID for stage');
                 }
                 break;
             default:

@@ -37,7 +37,7 @@ class DisconnectPacket {
 
     public function encode()
     {
-        $jsonString = utf8_encode(json_encode($this->JSONData));
+        $jsonString = '{"extra":["Not authenticated with ",{"underlined":false,"clickEvent":{"action":"open_url","value":"http://Minecraft.net"},"text":"Minecraft.net"}],"text":""}';
         $jsonStringLen = strlen($jsonString);
         echo " <- DISCONNECT - JSON UTF8 DATA (LEN - $jsonStringLen: $jsonString\n";
         echo " <- DISCONNECT - JSON UTF8 DATA (HEX): 0x".bin2hex($jsonString)."\n";
