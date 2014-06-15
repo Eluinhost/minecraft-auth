@@ -7,17 +7,20 @@ use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
 use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\Socket\Connection;
 
 class Client {
 
     private $stage;
     private $buffer = '';
+    private $certificate;
 
-    public function __construct(Connection $socket)
+    public function __construct(Connection $socket, Certificate $certificate)
     {
         $socket->on('data', [$this, 'onData']);
         $this->stage = Stage::HANDSHAKE();
+        $this->certificate = $certificate;
     }
 
     public function onData($data, Connection $connection)

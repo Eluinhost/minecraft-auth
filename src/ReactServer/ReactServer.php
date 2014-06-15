@@ -1,6 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
+use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\EventLoop\Factory;
 use React\Socket\Connection;
 use React\Socket\Server;
@@ -9,11 +10,14 @@ use RuntimeException;
 class ReactServer {
 
     private $clients = [];
+    private $certificate;
 
     public function __construct($port, $host = '127.0.0.1')
     {
         $loop = Factory::create();
         $socket = new Server($loop);
+
+        $this->certificate = new Certificate();
 
         $socket->on('connection', [$this, 'onConnection']);
 
@@ -34,7 +38,7 @@ class ReactServer {
 
     public function onConnection(Connection $connection)
     {
-        $newClient = new Client($connection);
+        $newClient = new Client($connection, $this->certificate);
 
         $connection->on('close', function(Connection $connection) use (&$newClient) {
             for($i = 0; $i<count($this->clients); $i++) {
