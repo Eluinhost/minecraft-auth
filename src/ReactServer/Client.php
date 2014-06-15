@@ -3,6 +3,7 @@ namespace PublicUHC\MinecraftAuth\ReactServer;
 
 use PublicUHC\MinecraftAuth\Protocol\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\EncryptionRequestPacket;
+use PublicUHC\MinecraftAuth\Protocol\EncryptionResponsePacket;
 use PublicUHC\MinecraftAuth\Protocol\PingPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
@@ -136,6 +137,13 @@ class Client {
                             ->setToken($verifyToken);
 
                         $connection->write($request->encode());
+                        break;
+                    case 1:
+                        //encryption response
+                        $response = EncryptionResponsePacket::fromStreamData($data);
+                        break;
+                    default:
+                        throw new InvalidDataException('Unknown packet ID for stage');
                 }
                 break;
             default:
