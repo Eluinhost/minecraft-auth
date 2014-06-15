@@ -2,6 +2,7 @@
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
 use PublicUHC\MinecraftAuth\Protocol\DisconnectPacket;
+use PublicUHC\MinecraftAuth\Protocol\EncryptionRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\PingPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
@@ -117,6 +118,24 @@ class Client {
                         break;
                     default:
                         throw new InvalidDataException('Packet not implemented');
+                }
+                break;
+            case Stage::LOGIN():
+                switch ($id) {
+                    case 0:
+                        //login start packet
+                        //TODO read the username
+                        $request = new EncryptionRequestPacket();
+                        $serverID = $request->getRandomServerID();
+                        $verifyToken = $request->getRandomServerID();
+
+                        $publicKey = $this->certificate->getPublicKey()->getPublicKey();
+                        $publicKey = substr($publicKey, 28, -26);
+                        $request->setPublicKey($publicKey)
+                            ->setServerID($serverID)
+                            ->setToken($verifyToken);
+
+                        $connection->write($request->encode());
                 }
                 break;
             default:
