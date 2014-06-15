@@ -29,6 +29,20 @@ class EncryptionRequestPacket {
         return $this;
     }
 
+    public static function getRandomServerID()
+    {
+        $range_start = 0x21;
+        $range_end   = 0x7E;
+        $id = '';
+        $length = 20;
+
+        for ($i = 0; $i < $length; $i++) {
+            $id .= chr(round(mt_rand($range_start, $range_end)));
+        }
+
+        return $id;
+    }
+
     /**
      * @return String The verification token
      */
