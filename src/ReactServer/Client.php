@@ -141,6 +141,11 @@ class Client {
                     case 1:
                         //encryption response
                         $response = EncryptionResponsePacket::fromStreamData($data);
+
+                        //TODO check auth servers and fire the listeners
+
+                        $disconnect = new DisconnectPacket('SOME FUCKING MESSAGE OR SOMETHING');
+                        $connection->write($disconnect->encode());
                         break;
                     default:
                         throw new InvalidDataException('Unknown packet ID for stage');
