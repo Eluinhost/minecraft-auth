@@ -66,18 +66,6 @@ class AuthClient extends BaseClient {
 
         $this->enableAES($secret);
 
-        /*
-         * TODO GENERATE LOGIN HASH
-         * sha1 := Sha1()
-         * sha1.update(ASCII encoding of the server id string from Encryption Request)
-         * sha1.update(shared secret)
-         * sha1.update(server's encoded public key from Encryption Request)
-         * hash := sha1.hexdigest()  # String of hex characters
-         *
-         * sha1(Notch) :  4ed1f46bbe04bc756bcb17c0c7ce3e4632f06a48
-         * sha1(jeb_)  : -7c9d5b0044c130109a5d7b5fb5c317c02b4e28c1
-         * sha1(simon) :  88e16a1019277b15d58faf0541e11910eb756f6
-         */
         $publicKey = $this->certificate->getPublicKey()->getPublicKey();
         $publicKey = base64_decode(substr($publicKey, 28, -26));
 
@@ -91,10 +79,9 @@ class AuthClient extends BaseClient {
             $this->uuid = $response->getUuid();
 
             //trigger the login success
-            $this->emit('login_success', [$this]);
-
             $disconnect = new DisconnectPacket();
-            $this->disconnectClient($disconnect->setReason('AUTH COMPLETED'));
+            $this->emit('login_success', [$this, $disconnect]);
+            $this->disconnectClient($disconnect);
         } catch (\Exception $ex) {
             $disconnect = new DisconnectPacket();
             $this->disconnectClient($disconnect->setReason("Error Authenticating with Mojang servers"));

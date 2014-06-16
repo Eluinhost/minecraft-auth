@@ -2,6 +2,7 @@
 namespace PublicUHC\MinecraftAuth\AuthServer;
 
 use Evenement\EventEmitter;
+use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use React\EventLoop\Factory;
 use React\Socket\Connection;
 use React\Socket\Server;
@@ -47,8 +48,8 @@ class AuthServer extends EventEmitter {
         $newClient = new AuthClient($connection, $this->certificate);
 
         //bubble the event up
-        $newClient->on('login_success', function(AuthClient $client) {
-            $this->emit('login_success', [$client->getUsername(), $client->getUUID()]);
+        $newClient->on('login_success', function(AuthClient $client, DisconnectPacket $packet) {
+            $this->emit('login_success', [$client->getUsername(), $client->getUUID(), $packet]);
         });
 
         $connection->on('close', function(Connection $connection) use (&$newClient) {
