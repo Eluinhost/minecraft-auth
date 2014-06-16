@@ -95,7 +95,7 @@ class EncryptionRequestPacket extends ClientboundPacket {
         $encodedPublicKey = base64_decode($this->getPublicKey());
         $publicKeyLength = pack('n', strlen($encodedPublicKey));
 
-        $encodedToken = base64_decode($this->getToken());
+        $encodedToken = $this->getToken();
         $tokenLength = pack('n', strlen($encodedToken));
 
         return $serverIDEncoded->getEncoded() . $publicKeyLength . $encodedPublicKey . $tokenLength . $encodedToken;
