@@ -1,6 +1,7 @@
 {
     "name": "publicuhc/minecraft-auth",
     "description": "Fake Minecraft server for authentication checking",
+    "keywords": ["minecraft", "authentication", "auth", "minecraft server", "PHPAuthServer", "yggdrasil", "auth server"],
     "minimum-stability": "dev",
     "license": "GPLv3",
     "authors": [
