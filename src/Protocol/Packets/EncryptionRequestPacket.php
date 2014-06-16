@@ -25,7 +25,7 @@ class EncryptionRequestPacket extends ClientboundPacket {
      * @param String $serverID The server ID
      * @return EncryptionRequestPacket
      */
-    protected function setServerID($serverID)
+    public function setServerID($serverID)
     {
         $this->serverID = $serverID;
         return $this;
@@ -60,7 +60,7 @@ class EncryptionRequestPacket extends ClientboundPacket {
      * @param String $token The verification token
      * @return EncryptionRequestPacket
      */
-    protected function setToken($token)
+    public function setToken($token)
     {
         $this->token = $token;
         return $this;
@@ -78,7 +78,7 @@ class EncryptionRequestPacket extends ClientboundPacket {
      * @param String $publicKey the public key
      * @return EncryptionRequestPacket
      */
-    protected function setPublicKey($publicKey)
+    public function setPublicKey($publicKey)
     {
         $this->publicKey = $publicKey;
         return $this;
