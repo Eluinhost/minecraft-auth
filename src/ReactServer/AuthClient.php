@@ -33,6 +33,13 @@ class AuthClient extends BaseClient {
 
     public function onEncryptionResponsePacket(EncryptionResponsePacket $packet, Connection $connection)
     {
+        if(null == $this->verifyToken) {
+            //packet received without a request sent
+            $disconnect = new DisconnectPacket();
+            $disconnect->setReason('Packet received out of order');
+            $connection->end($disconnect->encodePacket());
+        }
+
         $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
 
         echo "OUR TOKEN: ".bin2hex($verifyToken)."\n";
@@ -95,8 +102,11 @@ class AuthClient extends BaseClient {
 
     public function onHandshakePacket(HandshakePacket $packet, Connection $connection)
     {
+        //only allow protocol 5 to connect (1.7.6+)
         if($packet->getProtocolVersion() != 5) {
-            //TODO disconnect them
+            $disconnect = new DisconnectPacket();
+            $disconnect->setReason('Invalid Minecraft Version');
+            $connection->end($disconnect->encodePacket());
         }
         $this->setStage($packet->getNextStage());
     }
