@@ -3,6 +3,8 @@ namespace Protocol\Packets\STATUS\CLIENTBOUND;
 
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\StringType;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ClientboundPacket;
 
 /**
@@ -176,6 +178,10 @@ class Packet_0 extends ClientboundPacket {
                 'id'    => ''
             ]);
         }
+
+        $jsonString = utf8_encode(json_encode($payload));
+
+        return StringType::write($jsonString)->getEncoded();
     }
 
     /**
