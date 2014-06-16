@@ -277,12 +277,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "8e07ebfd51339ac0f3b90a327d5dc3132089bd4c"
+                "reference": "765154f54e9f0cd08e1e08a9562ad7754684305a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/8e07ebfd51339ac0f3b90a327d5dc3132089bd4c",
-                "reference": "8e07ebfd51339ac0f3b90a327d5dc3132089bd4c",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/765154f54e9f0cd08e1e08a9562ad7754684305a",
+                "reference": "765154f54e9f0cd08e1e08a9562ad7754684305a",
                 "shasum": ""
             },
             "require": {
@@ -366,7 +366,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2014-06-13 21:49:53"
+            "time": "2014-06-16 15:03:51"
         },
         {
             "name": "publicuhc/php-yggdrasil",
@@ -374,12 +374,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Eluinhost/php-yggdrasil.git",
-                "reference": "51e237b5e70bed36df23d2e500d54718088ea7b4"
+                "reference": "fb647e8a69c7a5e10d3b7845f1a1006cdb319f76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Eluinhost/php-yggdrasil/zipball/51e237b5e70bed36df23d2e500d54718088ea7b4",
-                "reference": "51e237b5e70bed36df23d2e500d54718088ea7b4",
+                "url": "https://api.github.com/repos/Eluinhost/php-yggdrasil/zipball/fb647e8a69c7a5e10d3b7845f1a1006cdb319f76",
+                "reference": "fb647e8a69c7a5e10d3b7845f1a1006cdb319f76",
                 "shasum": ""
             },
             "require": {
@@ -405,7 +405,7 @@
                 }
             ],
             "description": "PHP Library for interacting with Mojang authentication servers",
-            "time": "2014-06-12 10:08:04"
+            "time": "2014-06-16 15:39:00"
         },
         {
             "name": "react/promise",

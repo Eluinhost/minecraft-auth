@@ -142,7 +142,7 @@ class BaseClient extends EventEmitter {
     }
 
     /**
-     * Send a packet to the client, will use cipher if cipher is enabled TODO cipher
+     * Send a packet to the client, will use cipher if cipher is enabled
      *
      * @param ClientboundPacket $packet the packet to send to the client
      */
