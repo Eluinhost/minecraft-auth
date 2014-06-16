@@ -37,15 +37,21 @@ class AuthClient extends BaseClient {
             //packet received without a request sent
             $disconnect = new DisconnectPacket();
             $this->disconnectClient($disconnect->setReason('Packet received out of order'));
+            return;
         }
 
         $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
 
-        //TODO verify encryption success
+        if($verifyToken != $packet->getToken()) {
+            $disconnect = new DisconnectPacket();
+            $this->disconnectClient($disconnect->setReason('Invalid validation token'));
+            return;
+        }
 
+        //decrypt the shared secret
         $secret = $this->certificate->getPrivateKey()->decrypt($packet->getSecret());
 
-        //TODO check auth servers and fire the listeners
+        //TODO check auth servers for the UUID
 
         $this->enableAES($secret);
 
