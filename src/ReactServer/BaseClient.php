@@ -147,6 +147,7 @@ class BaseClient extends EventEmitter {
      */
     public function sendPacket(ClientboundPacket $packet)
     {
+        var_dump($packet);
         $packetData = $packet->encodePacket();
 
         if($this->secret != null) {
