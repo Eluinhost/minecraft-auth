@@ -7,7 +7,7 @@ use MabeEnum\Enum;
  * Class Direction
  * @package PublicUHC\MinecraftAuth\Protocol\Constants
  *
- * @method static Direction SEVERBOUND()
+ * @method static Direction SERVERBOUND()
  * @method static Direction CLIENTBOUND()
  */
 class Direction extends Enum {
