@@ -79,7 +79,7 @@ class AuthClient extends BaseClient {
          * sha1(simon) :  88e16a1019277b15d58faf0541e11910eb756f6
          */
         $publicKey = $this->certificate->getPublicKey()->getPublicKey();
-        $publicKey = substr($publicKey, 28, -26);
+        $publicKey = base64_decode(substr($publicKey, 28, -26));
 
         $loginHash = $this->serverID . $secret . $publicKey;
         $loginHash = self::sha1($loginHash);
