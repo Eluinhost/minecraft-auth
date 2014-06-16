@@ -3,6 +3,7 @@ namespace PublicUHC\MinecraftAuth\ReactServer;
 
 use Evenement\EventEmitter;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
+use PublicUHC\MinecraftAuth\Protocol\Packets\ClientboundPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
@@ -16,10 +17,11 @@ class BaseClient extends EventEmitter {
     /** @var string $buffer the current input buffer from the stream */
     private $buffer = '';
 
-    /**
-     * @var $packetClassMap Array an array that stores stage+packetID -> class mappings for incoming packets
-     */
+    /** @var $packetClassMap Array an array that stores stage+packetID -> class mappings for incoming packets */
     private $packetClassMap;
+
+    /** @var $currentConnection Connection The latest reference for the connection */
+    private $currentConnection;
 
     public function __construct(Connection $socket)
     {
@@ -60,6 +62,8 @@ class BaseClient extends EventEmitter {
 
     public function onData($data, Connection $connection)
     {
+        $this->currentConnection = $connection;
+
         try {
             $this->buffer .= $data;
 
@@ -122,5 +126,25 @@ class BaseClient extends EventEmitter {
         $className = join('', array_slice(explode('\\', $packetClass), -1));
         echo "FIRING EVENT {$packet->getStage()->getName()}.$className\n";
         $this->emit("{$packet->getStage()->getName()}.$className", [$packet, $connection]);
+    }
+
+    /**
+     * Send a packet to the client, will use cipher if cipher is enabled TODO cipher
+     *
+     * @param ClientboundPacket $packet the packet to send to the client
+     */
+    public function sendPacket(ClientboundPacket $packet)
+    {
+        $this->currentConnection->write($packet->encodePacket());
+    }
+
+    /**
+     * Disconnects the client with an optional packet
+     *
+     * @param ClientboundPacket $packet the packet to send if needed
+     */
+    public function disconnectClient(ClientboundPacket $packet = null)
+    {
+        $this->currentConnection->end($packet->encodePacket());
     }
 } 

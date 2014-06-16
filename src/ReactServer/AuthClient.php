@@ -31,13 +31,12 @@ class AuthClient extends BaseClient {
         $this->on('LOGIN.EncryptionResponsePacket', [$this, 'onEncryptionResponsePacket']);
     }
 
-    public function onEncryptionResponsePacket(EncryptionResponsePacket $packet, Connection $connection)
+    public function onEncryptionResponsePacket(EncryptionResponsePacket $packet)
     {
         if(null == $this->verifyToken) {
             //packet received without a request sent
             $disconnect = new DisconnectPacket();
-            $disconnect->setReason('Packet received out of order');
-            $connection->end($disconnect->encodePacket());
+            $this->disconnectClient($disconnect->setReason('Packet received out of order'));
         }
 
         $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
@@ -54,18 +53,19 @@ class AuthClient extends BaseClient {
 
         //TODO check auth servers and fire the listeners
 
+        //TODO enable AES
         $disconnect = new DisconnectPacket();
-        $disconnect->setReason('AUTH COMPLETED');
-        $connection->end(mcrypt_encrypt(
+        $this->disconnectClient($disconnect->setReason('AUTH COMPLETED'));
+        /* $connection->end(mcrypt_encrypt(
             MCRYPT_RIJNDAEL_128,
             $secret,
             $disconnect->encodePacket(),
             MCRYPT_MODE_CFB,
             $secret
-        ));
+        ));*/
     }
 
-    public function onLoginStartPacket(LoginStartPacket $packet, Connection $connection)
+    public function onLoginStartPacket(LoginStartPacket $packet)
     {
         $request = new EncryptionRequestPacket();
         $this->serverID = $request->getRandomServerID();
@@ -77,18 +77,18 @@ class AuthClient extends BaseClient {
             ->setServerID($this->serverID)
             ->setToken($this->verifyToken);
 
-        $connection->write($request->encodePacket());
+        $this->sendPacket($request);
     }
 
-    public function onPingRequestPacket(PingRequestPacket $packet, Connection $connection)
+    public function onPingRequestPacket(PingRequestPacket $packet)
     {
         $ping = new PingResponsePacket();
         $ping->setPingData($packet->getPingData());
 
-        $connection->end($ping->encodePacket());
+        $this->disconnectClient($ping);
     }
 
-    public function onStatusRequestPacket(StatusRequestPacket $packet, Connection $connection)
+    public function onStatusRequestPacket(StatusRequestPacket $packet)
     {
         $response = new StatusResponsePacket();
         $response->setDescription('§4▁§e▂§4▃§e▄§4▅§e▆§4▇§e█ §4§l   PHPAuthServer   §e█§4▇§e▆§4▅§e▄§4▃§e▂§4▁ §c▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔')
@@ -97,16 +97,16 @@ class AuthClient extends BaseClient {
             ->setProtocol(5)
             ->setVersion('1.7.6+');
 
-        $connection->write($response->encodePacket());
+        $this->sendPacket($response);
     }
 
-    public function onHandshakePacket(HandshakePacket $packet, Connection $connection)
+    public function onHandshakePacket(HandshakePacket $packet)
     {
         //only allow protocol 5 to connect (1.7.6+)
         if($packet->getProtocolVersion() != 5) {
             $disconnect = new DisconnectPacket();
             $disconnect->setReason('Invalid Minecraft Version');
-            $connection->end($disconnect->encodePacket());
+            $this->disconnectClient($disconnect);
         }
         $this->setStage($packet->getNextStage());
     }
