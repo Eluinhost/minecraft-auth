@@ -49,7 +49,7 @@ class ReactServer extends EventEmitter {
 
         //bubble the event up
         $newClient->on('login_success', function(AuthClient $client) {
-            $this->emit('login_success', [$client]);
+            $this->emit('login_success', [$client->getUsername(), $client->getUUID()]);
         });
 
         $connection->on('close', function(Connection $connection) use (&$newClient) {
