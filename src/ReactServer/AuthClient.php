@@ -18,6 +18,8 @@ class AuthClient extends BaseClient {
     private $certificate;
     private $verifyToken = null;
     private $serverID = null;
+    private $username = null;
+    private $uuid = null;
 
     public function __construct(Connection $socket, Certificate $certificate)
     {
@@ -29,6 +31,16 @@ class AuthClient extends BaseClient {
         $this->on('STATUS.PingRequestPacket', [$this, 'onPingRequestPacket']);
         $this->on('LOGIN.LoginStartPacket', [$this, 'onLoginStartPacket']);
         $this->on('LOGIN.EncryptionResponsePacket', [$this, 'onEncryptionResponsePacket']);
+    }
+
+    public function getUsername()
+    {
+        return $this->username;
+    }
+
+    public function getUUID()
+    {
+        return $this->uuid;
     }
 
     public function onEncryptionResponsePacket(EncryptionResponsePacket $packet)
@@ -67,6 +79,7 @@ class AuthClient extends BaseClient {
         $request = new EncryptionRequestPacket();
         $this->serverID = $request->getRandomServerID();
         $this->verifyToken = $request->getRandomServerID();
+        $this->username = $packet->getUsername();
 
         $publicKey = $this->certificate->getPublicKey()->getPublicKey();
         $publicKey = substr($publicKey, 28, -26);
