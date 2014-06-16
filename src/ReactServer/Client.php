@@ -5,6 +5,7 @@ use Evenement\EventEmitter;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\LoginStartPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionResponsePacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\HandshakePacket;
@@ -59,14 +60,46 @@ class Client extends EventEmitter {
         $this->on('LOGIN.EncryptionResponsePacket', [$this, 'onEncryptionResponsePacket']);
     }
 
-    public function onEncryptionResponsePacket(EncryptionResponsePacket $packet)
+    public function onEncryptionResponsePacket(EncryptionResponsePacket $packet, Connection $connection)
     {
-        //TODO
+        $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
+
+        echo "OUR TOKEN: ".bin2hex($verifyToken)."\n";
+        echo "THEIR TOKEN ".bin2hex($packet->getToken())."\n";
+
+        //TODO verify encryption success
+
+        $secret = $this->certificate->getPrivateKey()->decrypt($packet->getSecret());
+
+        echo "ENCRYPT SECRET ".bin2hex($packet->getSecret())."\n";
+        echo "DECRYPT SECRET ".bin2hex($secret)."\n";
+
+        //TODO check auth servers and fire the listeners
+
+        $disconnect = new DisconnectPacket();
+        $disconnect->setReason('AUTH COMPLETED');
+        $connection->end(mcrypt_encrypt(
+            MCRYPT_RIJNDAEL_128,
+            $secret,
+            $disconnect->encodePacket(),
+            MCRYPT_MODE_CFB,
+            $secret
+        ));
     }
 
-    public function onLoginStartPacket(LoginStartPacket $packet)
+    public function onLoginStartPacket(LoginStartPacket $packet, Connection $connection)
     {
-        //TODO
+        $request = new EncryptionRequestPacket();
+        $this->serverID = $request->getRandomServerID();
+        $this->verifyToken = $request->getRandomServerID();
+
+        $publicKey = $this->certificate->getPublicKey()->getPublicKey();
+        $publicKey = substr($publicKey, 28, -26);
+        $request->setPublicKey($publicKey)
+            ->setServerID($this->serverID)
+            ->setToken($this->verifyToken);
+
+        $connection->write($request->encodePacket());
     }
 
     public function onPingRequestPacket(PingRequestPacket $packet, Connection $connection)
@@ -74,7 +107,7 @@ class Client extends EventEmitter {
         $ping = new PingResponsePacket();
         $ping->setPingData($packet->getPingData());
 
-        $connection->write($ping->encodePacket());
+        $connection->end($ping->encodePacket());
     }
 
     public function onStatusRequestPacket(StatusRequestPacket $packet, Connection $connection)
@@ -137,7 +170,8 @@ class Client extends EventEmitter {
         } catch (\Exception $ex) {
             echo "EXCEPTION IN PACKET PARSING {$ex->getMessage()}\n";
             echo $ex->getTraceAsString();
-            $dis = new DisconnectPacket('Internal Server Error: '.$ex->getMessage());
+            $dis = new DisconnectPacket();
+            $dis->setReason('Internal Server Error: '.$ex->getMessage());
             $connection->end($dis->encodePacket());
         }
     }
@@ -164,110 +198,4 @@ class Client extends EventEmitter {
         echo "FIRING EVENT {$packet->getStage()->getName()}.$className\n";
         $this->emit("{$packet->getStage()->getName()}.$className", [$packet, $connection]);
     }
-
-    /*
-    private function processPacket($id, $data, Connection $connection)
-    {
-        $packetClass = 'PublicUHC\MinecraftAuth\Protocol\Packets\\' . $this->stage->getName() . '\SERVERBOUND\Packet_' . dechex($id);
-
-        if(!class_exists($packetClass)) {
-            throw new InvalidDataException("Unknown packet received ($id)");
-        }
-        $packet = new $packetClass();
-
-
-        echo "-> PACKET ID: $id, STAGE: {$this->stage->getName()}\n";
-        switch ($this->stage) {
-            case Stage::HANDSHAKE():
-                switch ($id) {
-                    case 0:
-                        $handshake = HandshakePacket::fromStreamData($data);
-
-                        //TODO check protocol e.t.c.
-
-                        //switch stage
-                        echo "  -> SWITCHING TO STAGE: {$handshake->getNextStage()->getName()}\n";
-                        $this->stage = $handshake->getNextStage();
-                        break;
-                    default:
-                        throw new InvalidDataException('Packet not implemented');
-                }
-                break;
-            case Stage::STATUS():
-                switch ($id) {
-                    case 0:
-                        //status request packet, no data
-                        $response = new StatusResponsePacket();
-                        $response->setDescription('§4▁§e▂§4▃§e▄§4▅§e▆§4▇§e█ §4§l   PHPAuthServer   §e█§4▇§e▆§4▅§e▄§4▃§e▂§4▁ §c▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔')
-                            ->setMaxPlayers(-1)
-                            ->setOnlineCount(-1)
-                            ->setProtocol(5)
-                            ->setVersion('1.7.6+');
-
-                        $connection->write($response->encode());
-                        break;
-                    case 1:
-                        //ping
-                        echo "PING DATA: ".bin2hex($data)."\n";
-
-                        $ping = new PingPacket($data);
-                        $connection->end($ping->encode());
-                        break;
-                    default:
-                        throw new InvalidDataException('Packet not implemented');
-                }
-                break;
-            case Stage::LOGIN():
-                switch ($id) {
-                    case 0:
-                        //login start packet
-                        //TODO read the username
-                        $request = new EncryptionRequestPacket();
-                        $this->serverID = $request->getRandomServerID();
-                        $this->verifyToken = $request->getRandomServerID();
-
-                        $publicKey = $this->certificate->getPublicKey()->getPublicKey();
-                        $publicKey = substr($publicKey, 28, -26);
-                        $request->setPublicKey($publicKey)
-                            ->setServerID($this->serverID)
-                            ->setToken($this->verifyToken);
-
-                        $connection->write($request->encode());
-                        break;
-                    case 1:
-                        //encryption response
-                        $encryptionResponse = EncryptionResponsePacket::fromStreamData($data);
-
-                        $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
-
-                        echo "OUR TOKEN: ".bin2hex($verifyToken)."\n";
-                        echo "THEIR TOKEN ".bin2hex($encryptionResponse->getToken())."\n";
-
-                        //TODO verify encryption success
-
-                        $secret = $this->certificate->getPrivateKey()->decrypt($encryptionResponse->getSecret());
-
-                        echo "ENCRYPT SECRET ".bin2hex($encryptionResponse->getSecret())."\n";
-                        echo "DECRYPT SECRET ".bin2hex($secret)."\n";
-
-                        //TODO check auth servers and fire the listeners
-
-                        $disconnect = new DisconnectPacket('SOME FUCKING MESSAGE OR SOMETHING');
-                        $connection->write(mcrypt_encrypt(
-                            MCRYPT_RIJNDAEL_128,
-                            $secret,
-                            $disconnect->encode(),
-                            MCRYPT_MODE_CFB,
-                            $secret
-                        ));
-                        break;
-                    default:
-                        throw new InvalidDataException('Unknown packet ID for stage');
-                }
-                break;
-            default:
-                throw new InvalidDataException('Unknown stage');
-        }
-    }
-    */
 } 
