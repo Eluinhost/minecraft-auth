@@ -10,6 +10,7 @@
         }
     ],
     "require": {
+        "ext-mcrypt": "*",
         "phpseclib/phpseclib": "0.3.*",
         "publicuhc/php-yggdrasil": "dev-master",
         "marc-mabe/php-enum": "1.2.*",
