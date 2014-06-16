@@ -11,8 +11,8 @@ class StringType extends DataType {
 
         $data = substr($data, $stringLengthVarInt->getDataLength());
 
-        $actualString = substr($data, $stringLengthVarInt->getValue());
-        return new StringType($actualString, $original, strlen($data));
+        $actualString = substr($data, 0, $stringLengthVarInt->getValue());
+        return new StringType($actualString, $original, $stringLengthVarInt->getDataLength() + $stringLengthVarInt->getValue());
     }
 
     public static function write($data)
