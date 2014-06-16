@@ -1,16 +1,12 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Protocol\Packets\STATUS\SERVERBOUND;
+namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
-use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
 
 /**
- * Class Packet_0
- * @package PublicUHC\MinecraftAuth\Protocol\Packets\STATUS\SERVERBOUND
- *
  * Represents a status request packet. http://wiki.vg/Protocol#Request
  */
-class Packet_0 extends ServerboundPacket {
+class StatusRequestPacket extends ServerboundPacket {
 
     /**
      * Get the ID of this packet
@@ -33,10 +29,9 @@ class Packet_0 extends ServerboundPacket {
     /**
      * Parse the raw data into the packet
      * @param $data String the raw data to parse (minus packet ID and packet length
-     * @return Packet_0
      */
     public function fromRawData($data)
     {
-        return new Packet_0();
+        //no contents :)
     }
 }

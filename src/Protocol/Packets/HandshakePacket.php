@@ -1,21 +1,16 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Protocol\Packets\HANDSHAKE\SERVERBOUND;
+namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 
 use InvalidArgumentException;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
-use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
 use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 
 /**
- * Class Packet_0
- *
  * Represents an incoming Handshake packet. http://wiki.vg/Protocol#Handshake
- *
- * @package PublicUHC\MinecraftAuth\Protocol\Packets\HANDSHAKE\SERVERBOUND
  */
-class Packet_0 extends ServerboundPacket {
+class HandshakePacket extends ServerboundPacket {
 
     private $protocolVersion;
     private $serverAddress;
@@ -32,7 +27,7 @@ class Packet_0 extends ServerboundPacket {
 
     /**
      * @param $version int the version to set to
-     * @return Packet_0
+     * @return HandshakePacket
      */
     protected function setProtocolVersion($version)
     {
@@ -50,7 +45,7 @@ class Packet_0 extends ServerboundPacket {
 
     /**
      * @param $serverAddress String the server address
-     * @return Packet_0
+     * @return HandshakePacket
      */
     protected function setServerAddress($serverAddress)
     {
@@ -68,7 +63,7 @@ class Packet_0 extends ServerboundPacket {
 
     /**
      * @param $serverPort int the server port
-     * @return Packet_0
+     * @return HandshakePacket
      */
     protected function setServerPort($serverPort)
     {
@@ -86,7 +81,7 @@ class Packet_0 extends ServerboundPacket {
 
     /**
      * @param $nextStage Stage the next
-     * @return Packet_0
+     * @return HandshakePacket
      */
     protected function setNextStage(Stage $nextStage)
     {

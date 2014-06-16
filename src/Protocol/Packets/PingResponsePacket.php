@@ -1,16 +1,12 @@
 <?php
-namespace Protocol\Packets\STATUS\CLIENTBOUND;
+namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
-use PublicUHC\MinecraftAuth\Protocol\Packets\ClientboundPacket;
 
 /**
- * Class Packet_1
- * @package Protocol\Packets\STATUS\CLIENTBOUND
- *
  * Represents a ping response packet. http://wiki.vg/Protocol#Ping
  */
-class Packet_1 extends ClientboundPacket {
+class PingResponsePacket extends ClientboundPacket {
 
     private $pingData;
 
@@ -18,7 +14,7 @@ class Packet_1 extends ClientboundPacket {
      * The raw ping data to send
      *
      * @param $data
-     * @return Packet_1
+     * @return PingResponsePacket
      */
     public function setPingData($data)
     {

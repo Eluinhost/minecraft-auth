@@ -1,20 +1,14 @@
 <?php
-namespace Protocol\Packets\STATUS\CLIENTBOUND;
+namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\StringType;
-use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
-use PublicUHC\MinecraftAuth\Protocol\Packets\ClientboundPacket;
 
 /**
- * Class Packet_0
- * @package Protocol\Packets\STATUS\CLIENTBOUND
- *
  * Represents a status response packet. http://wiki.vg/Protocol#Response
- *
  */
-class Packet_0 extends ClientboundPacket {
+class StatusResponsePacket extends ClientboundPacket {
 
     private $version = '0';
     private $protocol = 0;
@@ -34,7 +28,7 @@ class Packet_0 extends ClientboundPacket {
 
     /**
      * @param string $version the name of the Minecraft version
-     * @return Packet_0
+     * @return StatusResponsePacket
      */
     public function setVersion($version)
     {
@@ -52,7 +46,7 @@ class Packet_0 extends ClientboundPacket {
 
     /**
      * @param int $protocol the protocol number
-     * @return Packet_0
+     * @return StatusResponsePacket
      */
     public function setProtocol($protocol)
     {
@@ -70,7 +64,7 @@ class Packet_0 extends ClientboundPacket {
 
     /**
      * @param int $max_players the max players to show
-     * @return Packet_0
+     * @return StatusResponsePacket
      */
     public function setMaxPlayers($max_players)
     {
@@ -88,7 +82,7 @@ class Packet_0 extends ClientboundPacket {
 
     /**
      * @param int $online_count the online amount to show
-     * @return Packet_0
+     * @return StatusResponsePacket
      */
     public function setOnlineCount($online_count)
     {
@@ -106,7 +100,7 @@ class Packet_0 extends ClientboundPacket {
 
     /**
      * @param array $online_players list of online player names
-     * @return Packet_0
+     * @return StatusResponsePacket
      */
     public function setOnlinePlayers($online_players)
     {
@@ -123,7 +117,7 @@ class Packet_0 extends ClientboundPacket {
 
     /**
      * @param string $description the server description
-     * @return Packet_0
+     * @return StatusResponsePacket
      */
     public function setDescription($description)
     {
@@ -141,7 +135,7 @@ class Packet_0 extends ClientboundPacket {
 
     /**
      * @param String $favicon the favicon base64encoded image, leave null to set no favicon
-     * @return Packet_0
+     * @return StatusResponsePacket
      */
     public function setFavicon($favicon)
     {

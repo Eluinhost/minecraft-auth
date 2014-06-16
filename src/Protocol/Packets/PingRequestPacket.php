@@ -1,16 +1,12 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Protocol\Packets\STATUS\SERVERBOUND;
+namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
-use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
 
 /**
- * Class Packet_1
- * @package PublicUHC\MinecraftAuth\Protocol\Packets\STATUS\SERVERBOUND
- *
  * Represents a ping request packet. http://wiki.vg/Protocol#Ping_2
  */
-class Packet_1 extends ServerboundPacket {
+class PingRequestPacket extends ServerboundPacket {
 
     private $pingData;
 
@@ -18,7 +14,7 @@ class Packet_1 extends ServerboundPacket {
      * The raw ping data to send
      *
      * @param $data
-     * @return Packet_1
+     * @return PingRequestPacket
      */
     protected function setPingData($data)
     {
@@ -55,7 +51,6 @@ class Packet_1 extends ServerboundPacket {
     /**
      * Parse the raw data into the packet
      * @param $data String the raw data to parse (minus packet ID and packet length
-     * @return ServerboundPacket
      */
     public function fromRawData($data)
     {

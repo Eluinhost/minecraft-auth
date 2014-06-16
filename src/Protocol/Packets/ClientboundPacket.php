@@ -2,7 +2,7 @@
 namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Direction;
-use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 
 abstract class ClientboundPacket extends Packet {
 
