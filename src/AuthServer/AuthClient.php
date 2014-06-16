@@ -81,6 +81,9 @@ class AuthClient extends BaseClient {
             //trigger the login success
             $disconnect = new DisconnectPacket();
             $this->emit('login_success', [$this, $disconnect]);
+            if($disconnect->getReasonJSON() == null) {
+                $disconnect->setReason("No kick reason supplied");
+            }
             $this->disconnectClient($disconnect);
         } catch (\Exception $ex) {
             $disconnect = new DisconnectPacket();

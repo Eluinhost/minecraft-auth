@@ -9,7 +9,7 @@ use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\StringType;
  */
 class DisconnectPacket extends ClientboundPacket {
 
-    private $reasonJSON;
+    private $reasonJSON = null;
 
     /**
      * @return String the JSON encoded disconnect message
