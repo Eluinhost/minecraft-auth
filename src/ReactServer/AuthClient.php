@@ -53,16 +53,10 @@ class AuthClient extends BaseClient {
 
         //TODO check auth servers and fire the listeners
 
-        //TODO enable AES
+        $this->enableAES($secret);
+
         $disconnect = new DisconnectPacket();
         $this->disconnectClient($disconnect->setReason('AUTH COMPLETED'));
-        /* $connection->end(mcrypt_encrypt(
-            MCRYPT_RIJNDAEL_128,
-            $secret,
-            $disconnect->encodePacket(),
-            MCRYPT_MODE_CFB,
-            $secret
-        ));*/
     }
 
     public function onLoginStartPacket(LoginStartPacket $packet)
