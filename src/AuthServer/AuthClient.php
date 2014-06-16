@@ -115,11 +115,7 @@ class AuthClient extends BaseClient {
     public function onStatusRequestPacket(StatusRequestPacket $packet)
     {
         $response = new StatusResponsePacket();
-        $response->setDescription('§4▁§e▂§4▃§e▄§4▅§e▆§4▇§e█ §4§l   PHPAuthServer   §e█§4▇§e▆§4▅§e▄§4▃§e▂§4▁ §c▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔')
-            ->setMaxPlayers(-1)
-            ->setOnlineCount(-1)
-            ->setProtocol(5)
-            ->setVersion('1.7.6+');
+        $this->emit('status_request', [$response]);
 
         $this->sendPacket($response);
     }

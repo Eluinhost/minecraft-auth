@@ -10,12 +10,12 @@ use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\StringType;
  */
 class StatusResponsePacket extends ClientboundPacket {
 
-    private $version = '0';
-    private $protocol = 0;
-    private $max_players = 0;
-    private $online_count = 0;
+    private $version = '1.7.6+';
+    private $protocol = 6;
+    private $max_players = -1;
+    private $online_count = -1;
     private $online_players = [];
-    private $description = 'A Minecraft Server';
+    private $description = '§4▁§e▂§4▃§e▄§4▅§e▆§4▇§e█ §4§l   PHPAuthServer   §e█§4▇§e▆§4▅§e▄§4▃§e▂§4▁ §c▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔';
     private $favicon = null;
 
     /**
