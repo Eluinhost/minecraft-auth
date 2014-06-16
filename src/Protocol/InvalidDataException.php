@@ -1,5 +1,5 @@
 <?php
-namespace PublicUHC\MinecraftAuth\ReactServer;
+namespace PublicUHC\MinecraftAuth\Protocol;
 
 use Exception;
 

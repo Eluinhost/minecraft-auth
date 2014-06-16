@@ -1,8 +1,9 @@
 <?php
-namespace PublicUHC\MinecraftAuth\ReactServer;
+namespace PublicUHC\MinecraftAuth\AuthServer;
 
 use Evenement\EventEmitter;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
+use PublicUHC\MinecraftAuth\Protocol\InvalidDataException;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ClientboundPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;

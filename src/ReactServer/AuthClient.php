@@ -1,5 +1,5 @@
 <?php
-namespace PublicUHC\MinecraftAuth\ReactServer;
+namespace PublicUHC\MinecraftAuth\AuthServer;
 
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionRequestPacket;
@@ -10,7 +10,6 @@ use PublicUHC\MinecraftAuth\Protocol\Packets\PingRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\PingResponsePacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\StatusRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\StatusResponsePacket;
-use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\Socket\Connection;
 
 class AuthClient extends BaseClient {

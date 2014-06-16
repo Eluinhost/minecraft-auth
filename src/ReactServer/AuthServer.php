@@ -1,14 +1,13 @@
 <?php
-namespace PublicUHC\MinecraftAuth\ReactServer;
+namespace PublicUHC\MinecraftAuth\AuthServer;
 
 use Evenement\EventEmitter;
-use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\EventLoop\Factory;
 use React\Socket\Connection;
 use React\Socket\Server;
 use RuntimeException;
 
-class ReactServer extends EventEmitter {
+class AuthServer extends EventEmitter {
 
     private $clients = [];
     private $certificate;
