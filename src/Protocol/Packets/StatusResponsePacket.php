@@ -99,12 +99,25 @@ class StatusResponsePacket extends ClientboundPacket {
     }
 
     /**
-     * @param array $online_players list of online player names
+     * Expects format:
+     * <code>
+     * [
+     *   &#123;
+     *     'name': 'name',
+     *     'id': 'uuid'
+     *   },
+     *   &#123;
+     *      ... another one e.t.c. ...
+     *   }
+     * ]
+     * </code>
+     * @param array $online_players list of online player names.
      * @return StatusResponsePacket
      */
     public function setOnlinePlayers($online_players)
     {
         $this->online_players = $online_players;
+        return $this;
     }
 
     /**
@@ -157,7 +170,7 @@ class StatusResponsePacket extends ClientboundPacket {
             'players' => [
                 'max'       => $this->max_players,
                 'online'    => $this->online_count,
-                'sample'    => []
+                'sample'    => $this->online_players
             ],
             'description'   => [
                 'text'  => $this->description
@@ -165,12 +178,6 @@ class StatusResponsePacket extends ClientboundPacket {
         ];
         if($this->favicon != null) {
             $payload['favicon'] = $this->favicon;
-        }
-        foreach($this->online_players as $player) {
-            array_push($payload['players']['sample'], [
-                'name'  => $player,
-                'id'    => ''
-            ]);
         }
 
         $jsonString = utf8_encode(json_encode($payload));
