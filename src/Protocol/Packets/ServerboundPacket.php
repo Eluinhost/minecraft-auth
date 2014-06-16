@@ -17,6 +17,7 @@ abstract class ServerboundPacket extends Packet {
     /**
      * Parse the raw data into the packet
      * @param $data String the raw data to parse (minus packet ID and packet length
+     * @return ServerboundPacket
      */
     public abstract function fromRawData($data);
 }
