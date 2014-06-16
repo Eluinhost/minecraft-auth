@@ -135,7 +135,7 @@ class BaseClient extends EventEmitter {
         $packet = new $packetClass();
 
         $packet->fromRawData($data);
-        var_dump($packet);
+        //var_dump($packet);
 
         $className = join('', array_slice(explode('\\', $packetClass), -1));
         $this->emit("{$packet->getStage()->getName()}.$className", [$packet, $connection]);
@@ -148,7 +148,7 @@ class BaseClient extends EventEmitter {
      */
     public function sendPacket(ClientboundPacket $packet)
     {
-        var_dump($packet);
+        //var_dump($packet);
         $packetData = $packet->encodePacket();
 
         if($this->secret != null) {
