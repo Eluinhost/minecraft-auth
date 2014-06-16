@@ -1,6 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\AuthServer;
 
+use Math_BigInteger;
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionResponsePacket;
@@ -77,7 +78,11 @@ class AuthClient extends BaseClient {
          * sha1(jeb_)  : -7c9d5b0044c130109a5d7b5fb5c317c02b4e28c1
          * sha1(simon) :  88e16a1019277b15d58faf0541e11910eb756f6
          */
-        $loginHash = '';
+        $publicKey = $this->certificate->getPublicKey()->getPublicKey();
+        $publicKey = substr($publicKey, 28, -26);
+
+        $loginHash = $this->serverID . $secret . $publicKey;
+        $loginHash = self::sha1($loginHash);
 
         $yggdrasil = new DefaultYggdrasil();
 
@@ -92,7 +97,7 @@ class AuthClient extends BaseClient {
             $this->disconnectClient($disconnect->setReason('AUTH COMPLETED'));
         } catch (\Exception $ex) {
             $disconnect = new DisconnectPacket();
-            $this->disconnectClient($disconnect->setReason($ex->getMessage()));
+            $this->disconnectClient($disconnect->setReason("Error Authenticating with Mojang servers"));
         }
     }
 
@@ -141,5 +146,11 @@ class AuthClient extends BaseClient {
             $this->disconnectClient($disconnect);
         }
         $this->setStage($packet->getNextStage());
+    }
+
+    public static function sha1($data) {
+        $number = new Math_BigInteger(sha1($data, true), -256);
+        $zero = new Math_BigInteger(0);
+        return ($zero->compare($number) <= 0 ? "":"-") . ltrim($number->toHex(), "0");
     }
 } 
