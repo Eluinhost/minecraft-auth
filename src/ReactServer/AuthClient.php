@@ -41,15 +41,9 @@ class AuthClient extends BaseClient {
 
         $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
 
-        echo "OUR TOKEN: ".bin2hex($verifyToken)."\n";
-        echo "THEIR TOKEN ".bin2hex($packet->getToken())."\n";
-
         //TODO verify encryption success
 
         $secret = $this->certificate->getPrivateKey()->decrypt($packet->getSecret());
-
-        echo "ENCRYPT SECRET ".bin2hex($packet->getSecret())."\n";
-        echo "DECRYPT SECRET ".bin2hex($secret)."\n";
 
         //TODO check auth servers and fire the listeners
 

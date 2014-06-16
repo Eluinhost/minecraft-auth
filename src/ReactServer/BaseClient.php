@@ -132,13 +132,11 @@ class BaseClient extends EventEmitter {
 
         /** @var $packet ServerboundPacket */
         $packet = new $packetClass();
-        echo 'Found packet '.get_class($packet)." ID: $id\n";
 
         $packet->fromRawData($data);
         var_dump($packet);
 
         $className = join('', array_slice(explode('\\', $packetClass), -1));
-        echo "FIRING EVENT {$packet->getStage()->getName()}.$className\n";
         $this->emit("{$packet->getStage()->getName()}.$className", [$packet, $connection]);
     }
 
