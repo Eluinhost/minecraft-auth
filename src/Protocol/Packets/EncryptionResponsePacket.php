@@ -1,9 +1,12 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Protocol;
+namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
-class EncryptionResponsePacket {
+use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 
-    const PACKET_ID = 1;
+/**
+ * Represents an encryption response. http://wiki.vg/Protocol#Encryption_Response
+ */
+class EncryptionResponsePacket extends ServerboundPacket {
 
     private $secret;
     private $token;
@@ -18,9 +21,9 @@ class EncryptionResponsePacket {
 
     /**
      * @param String $token the verify token
-     * @return $this
+     * @return EncryptionResponsePacket
      */
-    public function setToken($token)
+    protected function setToken($token)
     {
         $this->token = $token;
         return $this;
@@ -36,38 +39,49 @@ class EncryptionResponsePacket {
 
     /**
      * @param String $secret the shared serect
-     * @return $this
+     * @return EncryptionResponsePacket
      */
-    public function setSecret($secret)
+    protected function setSecret($secret)
     {
         $this->secret = $secret;
         return $this;
     }
 
     /**
-     * @param $data
-     * @return EncryptionResponsePacket
+     * Get the ID of this packet
+     * @return int
      */
-    public static function fromStreamData($data)
+    public function getPacketID()
+    {
+        return 0x01;
+    }
+
+    /**
+     * Get the stage this packet is for
+     * @return Stage
+     */
+    public function getStage()
+    {
+        return STAGE::LOGIN();
+    }
+
+    /**
+     * Parse the raw data into the packet
+     * @param $data String the raw data to parse (minus packet ID and packet length
+     */
+    public function fromRawData($data)
     {
         $secretLength = unpack('nshort', substr($data, 0, 2))['short'];
         $data = substr($data, 2);
-        echo " -> ENCRYPTION RESPONSE - SECRET LENGTH: $secretLength\n";
 
         $secretData = substr($data, 0, $secretLength);
         $data = substr($data, $secretLength);
-        echo " -> ENCRYPTION RESPONSE - SECRET DATA (O): $secretData\n";
-        echo " -> ENCRYPTION RESPONSE - SECRET DATA 0x".bin2hex($secretData)."\n";
 
         $verifyLength = unpack('nshort', substr($data, 0, 2))['short'];
         $data = substr($data, 2);
-        echo " -> ENCRYPTION RESPONSE - VERIFY LENGTH: $verifyLength\n";
 
         $verifyData = substr($data, 0, $verifyLength);
-        echo " -> ENCRYPTION RESPONSE - VERIFY DATA (O): $verifyData\n";
-        echo " -> ENCRYPTION RESPONSE - VERIFY DATA (E) 0x".bin2hex($verifyData)."\n";
 
-        $response = new EncryptionResponsePacket();
-        return $response->setToken($verifyData)->setSecret($secretData);
+        $this->setToken($verifyData)->setSecret($secretData);
     }
-} 
+}

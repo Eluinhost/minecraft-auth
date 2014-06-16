@@ -1,33 +1,21 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Protocol;
+namespace PublicUHC\MinecraftAuth\Protocol\Packets;
+
 
 use InvalidArgumentException;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
-use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 
-class HandshakePacket {
+/**
+ * Represents an incoming Handshake packet. http://wiki.vg/Protocol#Handshake
+ */
+class HandshakePacket extends ServerboundPacket {
 
     private $protocolVersion;
     private $serverAddress;
     private $serverPort;
     private $nextStage;
-
-    /**
-     * Create a new Handshake packet (serverbound->handshake 0x00)
-     *
-     * @param $protocolVersion int protocol version
-     * @param $serverAddress String server address connecting to
-     * @param $serverPort int port connecting to
-     * @param Stage $nextStage next stage for the client
-     */
-    public function __construct($protocolVersion, $serverAddress, $serverPort, Stage $nextStage)
-    {
-        $this->protocolVersion = $protocolVersion;
-        $this->serverAddress = $serverAddress;
-        $this->serverPort = $serverPort;
-        $this->nextStage = $nextStage;
-    }
 
     /**
      * @return int the protocol version
@@ -39,9 +27,9 @@ class HandshakePacket {
 
     /**
      * @param $version int the version to set to
-     * @return $this
+     * @return HandshakePacket
      */
-    public function setProtocolVersion($version)
+    protected function setProtocolVersion($version)
     {
         $this->protocolVersion = $version;
         return $this;
@@ -57,9 +45,9 @@ class HandshakePacket {
 
     /**
      * @param $serverAddress String the server address
-     * @return $this
+     * @return HandshakePacket
      */
-    public function setServerAddress($serverAddress)
+    protected function setServerAddress($serverAddress)
     {
         $this->serverAddress = $serverAddress;
         return $this;
@@ -75,9 +63,9 @@ class HandshakePacket {
 
     /**
      * @param $serverPort int the server port
-     * @return $this
+     * @return HandshakePacket
      */
-    public function setServerPort($serverPort)
+    protected function setServerPort($serverPort)
     {
         $this->serverPort = $serverPort;
         return $this;
@@ -93,40 +81,52 @@ class HandshakePacket {
 
     /**
      * @param $nextStage Stage the next
-     * @return $this
+     * @return HandshakePacket
      */
-    public function setNextStage(Stage $nextStage)
+    protected function setNextStage(Stage $nextStage)
     {
         $this->nextStage = $nextStage;
         return $this;
     }
 
     /**
-     * Reads a handshake packet from the string, removes parsed data
-     *
-     * @param $data String
-     * @throws InvalidDataException if not valid packet structure
-     * @return HandshakePacket
+     * Get the ID of this packet
+     * @return int
      */
-    public static function fromStreamData(&$data)
+    public function getPacketID()
+    {
+        return 0x00;
+    }
+
+    /**
+     * Get the stage this packet is for
+     * @return Stage
+     */
+    function getStage()
+    {
+        return Stage::HANDSHAKE();
+    }
+
+    /**
+     * Parse the raw data
+     * @param $data String the raw data to parse (minus packet ID and packet length
+     * @throws InvalidDataException
+     */
+    function fromRawData($data)
     {
         $versionVarInt = VarInt::readUnsignedVarInt($data);
         $data = substr($data, $versionVarInt->getDataLength());
-        echo "  -> VERSION: {$versionVarInt->getValue()}\n";
 
         $addressStringLength = VarInt::readUnsignedVarInt($data);
         $data = substr($data, $addressStringLength->getDataLength());
 
         $address = substr($data, 0, $addressStringLength->getValue());
         $data = substr($data, $addressStringLength->getValue());
-        echo "  -> ADDRESS: $address\n";
 
         $portShort = unpack('nshort', substr($data, 0, 2))['short'];
         $data = substr($data, 2);
-        echo "  -> PORT: {$portShort}\n";
 
         $nextVarInt = VarInt::readUnsignedVarInt($data);
-        echo "  -> NEXT STAGE #: {$nextVarInt->getValue()}\n";
 
         try {
             $nextStage = Stage::get($nextVarInt->getValue());
@@ -136,9 +136,13 @@ class HandshakePacket {
                 throw new InvalidDataException('Stage must be LOGIN or STATUS on handshake');
             }
 
-            return new HandshakePacket($versionVarInt->getValue(), $address, $portShort, $nextStage);
+            //set all of the data
+            $this->setNextStage($nextStage)
+                ->setServerPort($portShort)
+                ->setProtocolVersion($versionVarInt->getValue())
+                ->setServerAddress($address);
         } catch (InvalidArgumentException $ex) {
             throw new InvalidDataException('Stage is not a valid number');
         }
     }
-} 
+}

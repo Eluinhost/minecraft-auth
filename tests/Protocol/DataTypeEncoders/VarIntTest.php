@@ -1,5 +1,5 @@
 <?php
-namespace PublicUHC\MinecraftAuth\ReactServer\DataTypes;
+namespace PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders;
 
 class VarIntTest extends \PHPUnit_Framework_TestCase {
 

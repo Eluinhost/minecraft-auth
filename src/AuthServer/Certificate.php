@@ -1,5 +1,5 @@
 <?php
-namespace PublicUHC\MinecraftAuth\ReactServer\Encryption;
+namespace PublicUHC\MinecraftAuth\AuthServer;
 
 use Crypt_RSA;
 
