@@ -40,9 +40,9 @@ class AuthClient extends BaseClient {
             return;
         }
 
-        $verifyToken = $this->certificate->getPublicKey()->encrypt($this->verifyToken);
+        $verifyToken = $this->certificate->getPrivateKey()->decrypt($packet->getToken());
 
-        if($verifyToken != $packet->getToken()) {
+        if($verifyToken != $this->verifyToken) {
             $disconnect = new DisconnectPacket();
             $this->disconnectClient($disconnect->setReason('Invalid validation token'));
             return;
