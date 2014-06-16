@@ -32,15 +32,15 @@ class Client {
 
         $this->packetClassMap = [
             STAGE::HANDSHAKE()->getValue() => [
-                0x00 => 'PublicUHC\MinecraftAuth\Packets\HandshakePacket'
+                0x00 => 'PublicUHC\MinecraftAuth\Protocol\Packets\HandshakePacket'
             ],
             STAGE::STATUS()->getValue() => [
-                0x00 => 'PublicUHC\MinecraftAuth\Packets\StatusRequestPacket',
-                0x01 => 'PublicUHC\MinecraftAuth\Packets\PingRequestPacket'
+                0x00 => 'PublicUHC\MinecraftAuth\Protocol\Packets\StatusRequestPacket',
+                0x01 => 'PublicUHC\MinecraftAuth\Protocol\Packets\PingRequestPacket'
             ],
             STAGE::LOGIN()->getValue() => [
-                0x00 => 'PublicUHC\MinecraftAuth\Packets\LoginStartPacket',
-                0x01 => 'PublicUHC\MinecraftAuth\Packets\EncryptionResponsePacket'
+                0x00 => 'PublicUHC\MinecraftAuth\Protocol\Packets\LoginStartPacket',
+                0x01 => 'PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionResponsePacket'
             ]
         ];
     }
@@ -48,25 +48,18 @@ class Client {
     public function onData($data, Connection $connection)
     {
         try {
-            echo "NEW DATA: " . bin2hex($data) . "\n";
-
             $this->buffer .= $data;
 
             do {
-                echo "START PROCESS BUFFER " . bin2hex($this->buffer) . "\n";
-
                 $packetLengthVarInt = VarInt::readUnsignedVarInt($this->buffer);
                 if($packetLengthVarInt === false) {
-                    echo "NOT ENOUGH DATA TO READ PACKET LENGTH\n";
                     return;
                 }
                 $totalLength = $packetLengthVarInt->getDataLength() + $packetLengthVarInt->getValue();
-                echo "-> PACKET LENGTH: {$packetLengthVarInt->getValue()}/$totalLength\n";
 
                 $bufferLength = strlen($this->buffer);
                 //if we don't have enough data to read the entire packet wait for more data to enter
                 if ($bufferLength < $totalLength) {
-                    echo "NOT ENOUGH DATA TO READ PACKET ($bufferLength)\n";
                     return;
                 }
 
@@ -88,7 +81,6 @@ class Client {
 
                 $len = strlen($this->buffer);
                 $data = bin2hex($this->buffer);
-                echo "FINISHED PACKET PROCESSING, EXTRA DATA: $data LEN $len\n";
             } while (strlen($this->buffer) > 0);
         } catch (\Exception $ex) {
             echo "EXCEPTION IN PACKET PARSING {$ex->getMessage()}\n";
@@ -111,9 +103,15 @@ class Client {
 
         /** @var $packet ServerboundPacket */
         $packet = new $packetClass();
-        $packet->fromRawData($data);
+        echo 'Found packet '.get_class($packet)." ID: $id\n";
 
-        //TODO send events out
+        $packet->fromRawData($data);
+        var_dump($packet);
+
+        //TODO send events out to remove stuff like this V
+        if($this->stage == STAGE::HANDSHAKE() && $id == 0x00) {
+            $this->stage = $packet->getNextStage();
+        }
     }
 
     /*
