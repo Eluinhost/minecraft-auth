@@ -4,8 +4,8 @@ namespace PublicUHC\MinecraftAuth\Protocol\Packets\HANDSHAKE\SERVERBOUND;
 
 use InvalidArgumentException;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
-use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
 use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 
 /**

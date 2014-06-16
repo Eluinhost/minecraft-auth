@@ -1,7 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\Protocol;
 
-use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 
 class DisconnectPacket {
 

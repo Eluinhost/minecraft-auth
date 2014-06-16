@@ -1,5 +1,5 @@
 <?php
-namespace PublicUHC\MinecraftAuth\ReactServer\DataTypes;
+namespace PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders;
 
 use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 

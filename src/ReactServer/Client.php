@@ -1,6 +1,7 @@
 <?php
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\Protocol\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\EncryptionRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\EncryptionResponsePacket;
@@ -8,7 +9,6 @@ use PublicUHC\MinecraftAuth\Protocol\PingPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
-use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
 use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\Socket\Connection;
 
@@ -80,6 +80,14 @@ class Client {
 
     private function processPacket($id, $data, Connection $connection)
     {
+        $packetClass = 'PublicUHC\MinecraftAuth\Protocol\Packets\\' . $this->stage->getName() . '\SERVERBOUND\Packet_' . dechex($id);
+
+        if(!class_exists($packetClass)) {
+            throw new InvalidDataException("Unknown packet received ($id)");
+        }
+        $packet = new $packetClass();
+
+
         echo "-> PACKET ID: $id, STAGE: {$this->stage->getName()}\n";
         switch ($this->stage) {
             case Stage::HANDSHAKE():

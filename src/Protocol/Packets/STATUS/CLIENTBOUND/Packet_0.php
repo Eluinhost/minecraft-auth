@@ -1,11 +1,18 @@
 <?php
-namespace PublicUHC\MinecraftAuth\Protocol;
+namespace Protocol\Packets\STATUS\CLIENTBOUND;
 
-use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 
-class StatusResponsePacket {
+use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\Packets\ClientboundPacket;
 
-    const PACKET_ID = 0;
+/**
+ * Class Packet_0
+ * @package Protocol\Packets\STATUS\CLIENTBOUND
+ *
+ * Represents a status response packet. http://wiki.vg/Protocol#Response
+ *
+ */
+class Packet_0 extends ClientboundPacket {
 
     private $version = '0';
     private $protocol = 0;
@@ -25,7 +32,7 @@ class StatusResponsePacket {
 
     /**
      * @param string $version the name of the Minecraft version
-     * @return $this;
+     * @return Packet_0
      */
     public function setVersion($version)
     {
@@ -43,7 +50,7 @@ class StatusResponsePacket {
 
     /**
      * @param int $protocol the protocol number
-     * @return $this;
+     * @return Packet_0
      */
     public function setProtocol($protocol)
     {
@@ -61,7 +68,7 @@ class StatusResponsePacket {
 
     /**
      * @param int $max_players the max players to show
-     * @return $this
+     * @return Packet_0
      */
     public function setMaxPlayers($max_players)
     {
@@ -79,7 +86,7 @@ class StatusResponsePacket {
 
     /**
      * @param int $online_count the online amount to show
-     * @return $this;
+     * @return Packet_0
      */
     public function setOnlineCount($online_count)
     {
@@ -97,7 +104,7 @@ class StatusResponsePacket {
 
     /**
      * @param array $online_players list of online player names
-     * @return $this
+     * @return Packet_0
      */
     public function setOnlinePlayers($online_players)
     {
@@ -114,7 +121,7 @@ class StatusResponsePacket {
 
     /**
      * @param string $description the server description
-     * @return $this
+     * @return Packet_0
      */
     public function setDescription($description)
     {
@@ -131,8 +138,8 @@ class StatusResponsePacket {
     }
 
     /**
-     * @param String $favicon the favicon base64encoded image
-     * @return $this
+     * @param String $favicon the favicon base64encoded image, leave null to set no favicon
+     * @return Packet_0
      */
     public function setFavicon($favicon)
     {
@@ -140,7 +147,11 @@ class StatusResponsePacket {
         return $this;
     }
 
-    public function encode()
+    /**
+     * Get the encoded contents of the packet (minus packetID/length)
+     * @return String
+     */
+    protected function encodeContents()
     {
         $payload = [
             'version' => [
@@ -165,33 +176,23 @@ class StatusResponsePacket {
                 'id'    => ''
             ]);
         }
-
-        $jsonString = utf8_encode(json_encode($payload));
-        $jsonStringLen = strlen($jsonString);
-        echo " <- STATUS RESPONSE - JSON UTF8 DATA (LEN - $jsonStringLen: $jsonString\n";
-        echo " <- STATUS RESPONSE - JSON UTF8 DATA (HEX): 0x".bin2hex($jsonString)."\n";
-
-        $jsonStringLengthVarInt = VarInt::writeUnsignedVarInt($jsonStringLen);
-        echo " <- STATUS RESPONSE - STRING LENGTH (O): ".$jsonStringLengthVarInt->getValue()."\n";
-        echo " <- STATUS RESPONSE - STRING LENGTH (E): 0x".bin2hex($jsonStringLengthVarInt->getEncoded())."\n";
-
-        $jsonObjectEncoded = $jsonStringLengthVarInt->getEncoded() . $jsonString;
-        echo " <- ENCODED JSON OBJECT (RAW): ".$jsonObjectEncoded."\n";
-        echo " <- ENCODED JSON OBJECT (HEX): 0x".bin2hex($jsonObjectEncoded)."\n";
-
-        $packetIDVarInt = VarInt::writeUnsignedVarInt(self::PACKET_ID);
-        echo " <- STATUS RESPONSE - PACKET ID: ".self::PACKET_ID."\n";
-        echo " <- STATUS RESPONSE - PACKET ID VARINT (O): ".$packetIDVarInt->getValue()."\n";
-        echo " <- STATUS RESPONSE - PACKET ID VARINT (E): 0x".bin2hex($packetIDVarInt->getEncoded())."\n";
-
-        $packetLengthVarInt = VarInt::writeUnsignedVarInt($packetIDVarInt->getDataLength() + strlen($jsonObjectEncoded));
-        echo " <- STATUS RESPONSE - PACKET LENGTH: ".($packetIDVarInt->getDataLength() + strlen($jsonObjectEncoded))."\n";
-        echo " <- STATUS RESPONSE - PACKET LENGTH (O): ".$packetLengthVarInt->getValue()."\n";
-        echo " <- STATUS RESPONSE - PACKET LENGTH (E): 0x".bin2hex($packetLengthVarInt->getEncoded())."\n";
-
-        $encoded = $packetLengthVarInt->getEncoded() . $packetIDVarInt->getEncoded() . $jsonObjectEncoded;
-        echo 'ENCODED RESPONSE (HEX): 0x' . bin2hex($encoded) . "\n";
-        echo "ENCODED RESPONSE (RAW): $encoded\n";
-        return $encoded;
     }
-} 
+
+    /**
+     * Get the ID of this packet
+     * @return int
+     */
+    public function getPacketID()
+    {
+        return 0x00;
+    }
+
+    /**
+     * Get the stage this packet is for
+     * @return Stage
+     */
+    public function getStage()
+    {
+        return Stage::STATUS();
+    }
+}

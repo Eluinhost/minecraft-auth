@@ -3,7 +3,7 @@ namespace PublicUHC\MinecraftAuth\Protocol;
 
 use InvalidArgumentException;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
-use PublicUHC\MinecraftAuth\ReactServer\DataTypes\VarInt;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\ReactServer\InvalidDataException;
 
 class HandshakePacket {
