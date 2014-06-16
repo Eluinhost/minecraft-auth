@@ -3,26 +3,46 @@ namespace PublicUHC\MinecraftAuth\ReactServer;
 
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\Protocol\DisconnectPacket;
-use PublicUHC\MinecraftAuth\Protocol\EncryptionRequestPacket;
-use PublicUHC\MinecraftAuth\Protocol\EncryptionResponsePacket;
-use PublicUHC\MinecraftAuth\Protocol\PingPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
-use PublicUHC\MinecraftAuth\Protocol\HandshakePacket;
-use PublicUHC\MinecraftAuth\Protocol\StatusResponsePacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
 use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\Socket\Connection;
 
 class Client {
 
+    /** @var $stage Stage the current stage of the client */
     private $stage;
+
+    /** @var string $buffer the current input buffer from the stream */
     private $buffer = '';
+
+    /** @var $certificate Certificate the ceritificate to use for signing */
     private $certificate;
+
+    /**
+     * @var $packetClassMap Array an array that stores stage+packetID -> class mappings for incoming packets
+     */
+    private $packetClassMap;
 
     public function __construct(Connection $socket, Certificate $certificate)
     {
         $socket->on('data', [$this, 'onData']);
         $this->stage = Stage::HANDSHAKE();
         $this->certificate = $certificate;
+
+        $this->packetClassMap = [
+            STAGE::HANDSHAKE()->getValue() => [
+                0x00 => 'PublicUHC\MinecraftAuth\Packets\HandshakePacket'
+            ],
+            STAGE::STATUS()->getValue() => [
+                0x00 => 'PublicUHC\MinecraftAuth\Packets\StatusRequestPacket',
+                0x01 => 'PublicUHC\MinecraftAuth\Packets\PingRequestPacket'
+            ],
+            STAGE::LOGIN()->getValue() => [
+                0x00 => 'PublicUHC\MinecraftAuth\Packets\LoginStartPacket',
+                0x01 => 'PublicUHC\MinecraftAuth\Packets\EncryptionResponsePacket'
+            ]
+        ];
     }
 
     public function onData($data, Connection $connection)
@@ -78,6 +98,25 @@ class Client {
         }
     }
 
+    private function processPacket($id, $data, Connection $connection) {
+        $stageMap = $this->packetClassMap[$this->stage->getValue()];
+        if(null == $stageMap) {
+            throw new InvalidDataException('Invalid Stage');
+        }
+
+        $packetClass = $stageMap[$id];
+        if(null == $packetClass) {
+            throw new InvalidDataException("Unknown packet ID $id for stage {$this->stage->getName()}");
+        }
+
+        /** @var $packet ServerboundPacket */
+        $packet = new $packetClass();
+        $packet->fromRawData($data);
+
+        //TODO send events out
+    }
+
+    /*
     private function processPacket($id, $data, Connection $connection)
     {
         $packetClass = 'PublicUHC\MinecraftAuth\Protocol\Packets\\' . $this->stage->getName() . '\SERVERBOUND\Packet_' . dechex($id);
@@ -181,4 +220,5 @@ class Client {
                 throw new InvalidDataException('Unknown stage');
         }
     }
+    */
 } 
