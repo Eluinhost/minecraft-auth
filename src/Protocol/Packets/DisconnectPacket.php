@@ -35,7 +35,7 @@ class DisconnectPacket extends ClientboundPacket {
      */
     public function setReason($reason)
     {
-        $this->reasonJSON = json_decode($reason);
+        $this->reasonJSON = json_encode($reason);
         return $this;
     }
 
