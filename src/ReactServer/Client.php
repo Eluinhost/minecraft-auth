@@ -9,8 +9,10 @@ use PublicUHC\MinecraftAuth\Protocol\Packets\LoginStartPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionResponsePacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\HandshakePacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\PingRequestPacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\PingResponsePacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\StatusRequestPacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\StatusResponsePacket;
 use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\Socket\Connection;
 
@@ -67,18 +69,31 @@ class Client extends EventEmitter {
         //TODO
     }
 
-    public function onPingRequestPacket(PingRequestPacket $packet)
+    public function onPingRequestPacket(PingRequestPacket $packet, Connection $connection)
     {
-        //TODO
+        $ping = new PingResponsePacket();
+        $ping->setPingData($packet->getPingData());
+
+        $connection->write($ping->encodePacket());
     }
 
-    public function onStatusRequestPacket(StatusRequestPacket $packet)
+    public function onStatusRequestPacket(StatusRequestPacket $packet, Connection $connection)
     {
-        //TODO
+        $response = new StatusResponsePacket();
+        $response->setDescription('§4▁§e▂§4▃§e▄§4▅§e▆§4▇§e█ §4§l   PHPAuthServer   §e█§4▇§e▆§4▅§e▄§4▃§e▂§4▁ §c▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔')
+            ->setMaxPlayers(-1)
+            ->setOnlineCount(-1)
+            ->setProtocol(5)
+            ->setVersion('1.7.6+');
+
+        $connection->write($response->encodePacket());
     }
 
-    public function onHandshakePacket(HandshakePacket $packet)
+    public function onHandshakePacket(HandshakePacket $packet, Connection $connection)
     {
+        if($packet->getProtocolVersion() != 5) {
+            //TODO disconnect them
+        }
         $this->stage = $packet->getNextStage();
     }
 
@@ -147,7 +162,7 @@ class Client extends EventEmitter {
 
         $className = join('', array_slice(explode('\\', $packetClass), -1));
         echo "FIRING EVENT {$packet->getStage()->getName()}.$className\n";
-        $this->emit("{$packet->getStage()->getName()}.$className", [$packet]);
+        $this->emit("{$packet->getStage()->getName()}.$className", [$packet, $connection]);
     }
 
     /*
