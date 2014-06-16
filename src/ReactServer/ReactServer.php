@@ -38,11 +38,11 @@ class ReactServer {
 
     public function onConnection(Connection $connection)
     {
-        $newClient = new Client($connection, $this->certificate);
+        $newClient = new AuthClient($connection, $this->certificate);
 
         $connection->on('close', function(Connection $connection) use (&$newClient) {
             for($i = 0; $i<count($this->clients); $i++) {
-                /** @var $checkclient Client */
+                /** @var $checkclient AuthClient */
                 $checkclient = $this->clients[$i];
                 if($checkclient == $newClient) {
                     unset($this->clients[$i]);
