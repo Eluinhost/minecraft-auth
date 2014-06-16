@@ -49,6 +49,9 @@ class AuthClient extends BaseClient {
 
         $this->enableAES($secret);
 
+        //trigger the login success
+        $this->emit('login_success', [$this]);
+
         $disconnect = new DisconnectPacket();
         $this->disconnectClient($disconnect->setReason('AUTH COMPLETED'));
     }
