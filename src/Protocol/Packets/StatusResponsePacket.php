@@ -102,15 +102,17 @@ class StatusResponsePacket extends ClientboundPacket {
      * Expects format:
      * <code>
      * [
-     *   &#123;
+     *   [
      *     'name': 'name',
      *     'id': 'uuid'
-     *   },
-     *   &#123;
+     *   ],
+     *   [
      *      ... another one e.t.c. ...
-     *   }
+     *   ]
      * ]
      * </code>
+     * UUID is the player UUID with the - included, doesn't look like it's validated so you can use 000000000000-0000-0000-0000-00000000 if you want.
+     *
      * @param array $online_players list of online player names.
      * @return StatusResponsePacket
      */
