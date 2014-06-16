@@ -1,14 +1,20 @@
 <?php
 namespace PublicUHC\MinecraftAuth\ReactServer;
 
+use Evenement\EventEmitter;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
-use PublicUHC\MinecraftAuth\Protocol\DisconnectPacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\Packets\LoginStartPacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionResponsePacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\HandshakePacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\PingRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
+use PublicUHC\MinecraftAuth\Protocol\Packets\StatusRequestPacket;
 use PublicUHC\MinecraftAuth\ReactServer\Encryption\Certificate;
 use React\Socket\Connection;
 
-class Client {
+class Client extends EventEmitter {
 
     /** @var $stage Stage the current stage of the client */
     private $stage;
@@ -43,6 +49,37 @@ class Client {
                 0x01 => 'PublicUHC\MinecraftAuth\Protocol\Packets\EncryptionResponsePacket'
             ]
         ];
+
+        $this->on('HANDSHAKE.HandshakePacket', [$this, 'onHandshakePacket']);
+        $this->on('STATUS.StatusRequestPacket', [$this, 'onStatusRequestPacket']);
+        $this->on('STATUS.PingRequestPacket', [$this, 'onPingRequestPacket']);
+        $this->on('LOGIN.LoginStartPacket', [$this, 'onLoginStartPacket']);
+        $this->on('LOGIN.EncryptionResponsePacket', [$this, 'onEncryptionResponsePacket']);
+    }
+
+    public function onEncryptionResponsePacket(EncryptionResponsePacket $packet)
+    {
+        //TODO
+    }
+
+    public function onLoginStartPacket(LoginStartPacket $packet)
+    {
+        //TODO
+    }
+
+    public function onPingRequestPacket(PingRequestPacket $packet)
+    {
+        //TODO
+    }
+
+    public function onStatusRequestPacket(StatusRequestPacket $packet)
+    {
+        //TODO
+    }
+
+    public function onHandshakePacket(HandshakePacket $packet)
+    {
+        $this->stage = $packet->getNextStage();
     }
 
     public function onData($data, Connection $connection)
@@ -108,10 +145,9 @@ class Client {
         $packet->fromRawData($data);
         var_dump($packet);
 
-        //TODO send events out to remove stuff like this V
-        if($this->stage == STAGE::HANDSHAKE() && $id == 0x00) {
-            $this->stage = $packet->getNextStage();
-        }
+        $className = join('', array_slice(explode('\\', $packetClass), -1));
+        echo "FIRING EVENT {$packet->getStage()->getName()}.$className\n";
+        $this->emit("{$packet->getStage()->getName()}.$className", [$packet]);
     }
 
     /*
