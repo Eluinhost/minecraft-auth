@@ -10,6 +10,7 @@ use PublicUHC\MinecraftAuth\Protocol\Packets\PingRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\PingResponsePacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\StatusRequestPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\StatusResponsePacket;
+use PublicUHC\PhpYggdrasil\DefaultYggdrasil;
 use React\Socket\Connection;
 
 class AuthClient extends BaseClient {
@@ -62,15 +63,37 @@ class AuthClient extends BaseClient {
         //decrypt the shared secret
         $secret = $this->certificate->getPrivateKey()->decrypt($packet->getSecret());
 
-        //TODO check auth servers for the UUID
-
         $this->enableAES($secret);
 
-        //trigger the login success
-        $this->emit('login_success', [$this]);
+        /*
+         * TODO GENERATE LOGIN HASH
+         * sha1 := Sha1()
+         * sha1.update(ASCII encoding of the server id string from Encryption Request)
+         * sha1.update(shared secret)
+         * sha1.update(server's encoded public key from Encryption Request)
+         * hash := sha1.hexdigest()  # String of hex characters
+         *
+         * sha1(Notch) :  4ed1f46bbe04bc756bcb17c0c7ce3e4632f06a48
+         * sha1(jeb_)  : -7c9d5b0044c130109a5d7b5fb5c317c02b4e28c1
+         * sha1(simon) :  88e16a1019277b15d58faf0541e11910eb756f6
+         */
+        $loginHash = '';
 
-        $disconnect = new DisconnectPacket();
-        $this->disconnectClient($disconnect->setReason('AUTH COMPLETED'));
+        $yggdrasil = new DefaultYggdrasil();
+
+        try {
+            $response = $yggdrasil->hasJoined($this->username, $loginHash);
+            $this->uuid = $response->getUuid();
+
+            //trigger the login success
+            $this->emit('login_success', [$this]);
+
+            $disconnect = new DisconnectPacket();
+            $this->disconnectClient($disconnect->setReason('AUTH COMPLETED'));
+        } catch (\Exception $ex) {
+            $disconnect = new DisconnectPacket();
+            $this->disconnectClient($disconnect->setReason($ex->getMessage()));
+        }
     }
 
     public function onLoginStartPacket(LoginStartPacket $packet)
