@@ -138,7 +138,7 @@ class Client extends EventEmitter {
             echo "EXCEPTION IN PACKET PARSING {$ex->getMessage()}\n";
             echo $ex->getTraceAsString();
             $dis = new DisconnectPacket('Internal Server Error: '.$ex->getMessage());
-            $connection->end($dis->encode());
+            $connection->end($dis->encodePacket());
         }
     }
 
