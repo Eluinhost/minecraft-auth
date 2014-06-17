@@ -11,7 +11,7 @@ use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\StringType;
 class StatusResponsePacket extends ClientboundPacket {
 
     private $version = '1.7.6+';
-    private $protocol = 6;
+    private $protocol = 5;
     private $max_players = -1;
     private $online_count = -1;
     private $online_players = [];
