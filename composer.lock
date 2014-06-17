@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "4bb985c272a01050eff59daee72ee04c",
+    "hash": "1f53a9d58855766d9b08552380070b82",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -277,12 +277,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "765154f54e9f0cd08e1e08a9562ad7754684305a"
+                "reference": "f807d8799ec4dced329ff5ce31c999037e56e114"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/765154f54e9f0cd08e1e08a9562ad7754684305a",
-                "reference": "765154f54e9f0cd08e1e08a9562ad7754684305a",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/f807d8799ec4dced329ff5ce31c999037e56e114",
+                "reference": "f807d8799ec4dced329ff5ce31c999037e56e114",
                 "shasum": ""
             },
             "require": {
@@ -366,7 +366,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2014-06-16 15:03:51"
+            "time": "2014-06-16 22:36:54"
         },
         {
             "name": "publicuhc/php-yggdrasil",
@@ -374,12 +374,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Eluinhost/php-yggdrasil.git",
-                "reference": "fb647e8a69c7a5e10d3b7845f1a1006cdb319f76"
+                "reference": "a502d063c331ac024e96d465c3fb2c0f665649c5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Eluinhost/php-yggdrasil/zipball/fb647e8a69c7a5e10d3b7845f1a1006cdb319f76",
-                "reference": "fb647e8a69c7a5e10d3b7845f1a1006cdb319f76",
+                "url": "https://api.github.com/repos/Eluinhost/php-yggdrasil/zipball/a502d063c331ac024e96d465c3fb2c0f665649c5",
+                "reference": "a502d063c331ac024e96d465c3fb2c0f665649c5",
                 "shasum": ""
             },
             "require": {
@@ -405,7 +405,15 @@
                 }
             ],
             "description": "PHP Library for interacting with Mojang authentication servers",
-            "time": "2014-06-16 15:39:00"
+            "keywords": [
+                "Authentication",
+                "Mojang",
+                "auth",
+                "auth server",
+                "minecraft",
+                "yggdrasil"
+            ],
+            "time": "2014-06-17 08:33:51"
         },
         {
             "name": "react/promise",
