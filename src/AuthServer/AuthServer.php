@@ -61,7 +61,7 @@ class AuthServer extends EventEmitter {
             for($i = 0; $i<count($this->clients); $i++) {
                 /** @var $checkclient AuthClient */
                 $checkclient = $this->clients[$i];
-                if($checkclient == $newClient) {
+                if($checkclient === $newClient) {
                     unset($this->clients[$i]);
                     $this->clients = array_values($this->clients);
                     echo "A client disconnected. Now there are total ". count($this->clients) . " clients.\n";
