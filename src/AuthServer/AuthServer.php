@@ -1,8 +1,6 @@
 <?php
-namespace AuthServer;
+namespace PublicUHC\MinecraftAuth\AuthServer;
 
-use PublicUHC\MinecraftAuth\AuthServer\AuthClient;
-use PublicUHC\MinecraftAuth\AuthServer\Certificate;
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\StatusResponsePacket;
 use React\EventLoop\Factory;
