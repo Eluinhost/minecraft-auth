@@ -2,7 +2,7 @@
     "name": "publicuhc/minecraft-auth",
     "description": "Fake Minecraft server for authentication checking",
     "keywords": ["minecraft", "authentication", "auth", "minecraft server", "PHPAuthServer", "yggdrasil", "auth server"],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "license": "GPLv3",
     "authors": [
         {
@@ -13,7 +13,7 @@
     "require": {
         "ext-mcrypt": "*",
         "phpseclib/phpseclib": "0.3.*",
-        "publicuhc/php-yggdrasil": "dev-master",
+        "publicuhc/php-yggdrasil": "1.0.*",
         "marc-mabe/php-enum": "1.2.*",
         "react/react": "0.4.*"
     },
