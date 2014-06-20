@@ -1,34 +1,43 @@
 <?php
 namespace PublicUHC\MinecraftAuth\AuthServer;
 
-use Evenement\EventEmitter;
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\StatusResponsePacket;
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 use React\Socket\Connection;
 use React\Socket\Server;
 use RuntimeException;
 
-class AuthServer extends EventEmitter {
+class AuthServer extends Server {
 
-    private $clients = [];
-    private $certificate;
     private $loop;
+    private $certificate;
+    private $clients;
 
-    public function __construct($port, $host = '127.0.0.1')
+    /**
+     * Creates a new AuthServer. Start the server with start() (will block forever)
+     * @param int $port the port to bind to - default 25565
+     * @param string $host the host address to bind to - default 0.0.0.0
+     * @param LoopInterface $loop the loop to use, default null causes Factory::create() to create one
+     */
+    public function __construct($port = 25565, $host = '0.0.0.0', LoopInterface $loop = null)
     {
-        $this->loop = Factory::create();
-        $socket = new Server($this->loop);
+        if(null == $loop) {
+            $loop = Factory::create();
+        }
+        $this->loop = $loop;
+        parent::__construct($loop);
 
         $this->certificate = new Certificate();
 
-        $socket->on('connection', [$this, 'onConnection']);
+        $this->on('connection', [$this, 'onConnection']);
 
-        $socket->on('error', function(RuntimeException $ex) {
+        $this->on('error', function(RuntimeException $ex) {
             echo "Error with server connection: {$ex->getMessage()}\n";
         });
 
-        $socket->listen($port, $host);
+        $this->listen($port, $host);
     }
 
     /**
@@ -39,29 +48,43 @@ class AuthServer extends EventEmitter {
         $this->loop->run();
     }
 
+    /**
+     * @param $socket
+     * @return AuthClient
+     * @Override
+     */
+    public function createConnection($socket)
+    {
+        return new AuthClient($this->certificate, $socket, $this->loop);
+    }
+
     public function echoOnlineCount()
     {
         echo count($this->clients) . " open connections.\n";
     }
 
-    public function onConnection(Connection $connection)
+    /**
+     * Called on event 'connection'
+     * @param AuthClient $connection
+     */
+    public function onConnection(AuthClient $connection)
     {
-        $newClient = new AuthClient($connection, $this->certificate);
-
         //bubble the events up
-        $newClient->on('login_success', function(AuthClient $client, DisconnectPacket $packet) {
+        $connection->on('login_success', function(AuthClient $client, DisconnectPacket $packet) {
             $this->emit('login_success', [$client->getUsername(), $client->getUUID(), $packet]);
         });
-        $newClient->on('status_request', function(StatusResponsePacket $packet) {
+
+        $connection->on('status_request', function(StatusResponsePacket $packet) {
             $this->emit('status_request', [$packet]);
         });
 
-
-        $connection->on('close', function(Connection $connection) use (&$newClient) {
+        $connection->on('close', function() use (&$connection) {
             for($i = 0; $i<count($this->clients); $i++) {
                 /** @var $checkclient AuthClient */
                 $checkclient = $this->clients[$i];
-                if($checkclient === $newClient) {
+                //if we found our connection
+                if($checkclient === $connection) {
+                    //remove from array and reset the keys
                     unset($this->clients[$i]);
                     $this->clients = array_values($this->clients);
                     echo "A client disconnected. Now there are total ". count($this->clients) . " clients.\n";
@@ -70,13 +93,17 @@ class AuthServer extends EventEmitter {
             }
         });
 
+        //if there is an error with the connection echo the error and end the connection
         $connection->on('error', function($error, $connection) {
             /** @var $connection Connection */
             echo "ERROR: $error\n";
             $connection->end();
         });
 
-        $this->clients[] = $newClient;
+        //add the connection to the list of tracked connections
+        $this->clients[] = $connection;
+
+        //echo how many are now online
         $count = count($this->clients);
         echo "New client conected: {$connection->getRemoteAddress()}. Clients online: $count.\n";
     }
