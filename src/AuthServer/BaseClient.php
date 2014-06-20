@@ -17,7 +17,7 @@ class BaseClient extends Connection {
     private $stage;
 
     /** @var string $buffer the current unread data from the stream */
-    private $inputBuffer = '';
+    private $packetBuffer = '';
 
     /** @var $packetClassMap Array an array that stores stage+packetID -> class mappings for incoming packets */
     private $packetClassMap;
@@ -87,13 +87,13 @@ class BaseClient extends Connection {
         try {
 
             //add the data to the current buffer
-            $this->inputBuffer .= $data;
+            $this->packetBuffer .= $data;
 
             //for as long as we have data left in the buffer
             do {
 
                 //read the packet length from the stream
-                $packetLengthVarInt = VarInt::readUnsignedVarInt($this->inputBuffer);
+                $packetLengthVarInt = VarInt::readUnsignedVarInt($this->packetBuffer);
 
                 //not enough data to read the packet length, wait for more data
                 if($packetLengthVarInt === false) {
@@ -104,19 +104,19 @@ class BaseClient extends Connection {
                 $totalLength = $packetLengthVarInt->getDataLength() + $packetLengthVarInt->getValue();
 
                 //if we don't have enough data to read the entire packet wait for more data to enter
-                $bufferLength = strlen($this->inputBuffer);
+                $bufferLength = strlen($this->packetBuffer);
                 if ($bufferLength < $totalLength) {
                     return;
                 }
 
                 //remove the packet length varint from the buffer
-                $this->inputBuffer = substr($this->inputBuffer, $packetLengthVarInt->getDataLength());
+                $this->packetBuffer = substr($this->packetBuffer, $packetLengthVarInt->getDataLength());
 
                 //read the packet ID from the buffer
-                $packetDataWithPacketID = substr($this->inputBuffer, 0, $packetLengthVarInt->getValue());
+                $packetDataWithPacketID = substr($this->packetBuffer, 0, $packetLengthVarInt->getValue());
 
                 //remove the rest of the packet from the buffer
-                $this->inputBuffer = substr($this->inputBuffer, $packetLengthVarInt->getValue());
+                $this->packetBuffer = substr($this->packetBuffer, $packetLengthVarInt->getValue());
 
                 //read the packet ID
                 $packetID = VarInt::readUnsignedVarInt($packetDataWithPacketID);
@@ -128,7 +128,7 @@ class BaseClient extends Connection {
                 $this->processPacket($packetID->getValue(), $packetData);
 
                 //if we have buffer left run again
-            } while (strlen($this->inputBuffer) > 0);
+            } while (strlen($this->packetBuffer) > 0);
 
             //if any exceptions are thrown (error parsing the packets e.t.c.) send a disconnect packet
         } catch (Exception $ex) {
