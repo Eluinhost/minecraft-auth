@@ -202,18 +202,30 @@ class BaseClient extends Connection {
      */
     public function write($data)
     {
-        if (!$this->writable) {
-            return false;
-        }
-
         //encrypt the data if needed
         if($this->secret != null) {
             mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
             $data = mcrypt_generic($this->encryptor, $data);
             mcrypt_generic_deinit($this->encryptor);
         }
+        return parent::write($data);
+    }
 
-        return $this->buffer->write($data);
+    /**
+     * Override the base end to add encryption if we're in an encypted stage
+     *
+     * @param $data String the data to write on ending
+     * @Override
+     */
+    public function end($data = null)
+    {
+        //encrypt the data if needed
+        if($data != null && $this->secret != null) {
+            mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
+            $data = mcrypt_generic($this->encryptor, $data);
+            mcrypt_generic_deinit($this->encryptor);
+        }
+        parent::end($data);
     }
 
     /**
