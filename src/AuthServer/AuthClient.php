@@ -112,6 +112,7 @@ class AuthClient extends BaseClient {
             //disconnect the client
             $this->disconnectClient($disconnect);
         } catch (Exception $ex) {
+            echo "{$this->username} failed authentication with Mojang session servers\n";
             //exception occured checking against Mojang
             $this->disconnectClient((new DisconnectPacket())->setReason("Error Authenticating with Mojang servers"));
         }
