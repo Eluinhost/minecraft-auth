@@ -1,39 +1,41 @@
 <?php
 namespace PublicUHC\MinecraftAuth\AuthServer;
 
-use Evenement\EventEmitter;
+use Exception;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 use PublicUHC\MinecraftAuth\Protocol\InvalidDataException;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ClientboundPacket;
 use PublicUHC\MinecraftAuth\Protocol\Packets\DisconnectPacket;
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\Packets\ServerboundPacket;
+use React\EventLoop\LoopInterface;
 use React\Socket\Connection;
 
-class BaseClient extends EventEmitter {
+class BaseClient extends Connection {
 
     /** @var $stage Stage the current stage of the client */
     private $stage;
 
-    /** @var string $buffer the current input buffer from the stream */
-    private $buffer = '';
+    /** @var string $buffer the current unread data from the stream */
+    private $inputBuffer = '';
 
     /** @var $packetClassMap Array an array that stores stage+packetID -> class mappings for incoming packets */
     private $packetClassMap;
 
-    /** @var $currentConnection Connection The latest reference for the connection */
-    private $currentConnection;
-
     /** @var resource mcrypt module for stream encryption */
     private $encryptor;
 
-    /** @var String the secret/IV to use for stream encryption */
+    /** @var String the secret/IV to use for stream encryption, null when not in encryption mode */
     private $secret;
 
-    public function __construct(Connection $socket)
+    public function __construct($stream, LoopInterface $loop)
     {
+        parent::__construct($stream, $loop);
+
+        //default stage is handshake
         $this->stage = Stage::HANDSHAKE();
 
+        //setup the default stage=>packetID=>class map TODO allow passing values in in constructor
         $this->packetClassMap = [
             STAGE::HANDSHAKE()->getValue() => [
                 0x00 => 'PublicUHC\MinecraftAuth\Protocol\Packets\HandshakePacket'
@@ -48,7 +50,8 @@ class BaseClient extends EventEmitter {
             ]
         ];
 
-        $socket->on('data', [$this, 'onData']);
+        //call $this->onData whenever there is data available
+        $this->on('data', [$this, 'onData']);
     }
 
     /**
@@ -67,78 +70,107 @@ class BaseClient extends EventEmitter {
         $this->stage = $stage;
     }
 
-    public function onData($data, Connection $connection)
+    /**
+     * Called whenever there is data available on the stream
+     * @param $data String the raw data
+     */
+    public function onData($data)
     {
-        $this->currentConnection = $connection;
-
+        //if we're in encryption stage decrypt it first
         if($this->secret != null) {
             mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
-
             $data = mdecrypt_generic($this->encryptor, $data);
-
             mcrypt_generic_deinit($this->encryptor);
         }
 
+        //attempt to parse the data as a packet
         try {
-            $this->buffer .= $data;
 
+            //add the data to the current buffer
+            $this->inputBuffer .= $data;
+
+            //for as long as we have data left in the buffer
             do {
-                $packetLengthVarInt = VarInt::readUnsignedVarInt($this->buffer);
+
+                //read the packet length from the stream
+                $packetLengthVarInt = VarInt::readUnsignedVarInt($this->inputBuffer);
+
+                //not enough data to read the packet length, wait for more data
                 if($packetLengthVarInt === false) {
                     return;
                 }
+
+                //total length of the packet is the length of the varint + it's value
                 $totalLength = $packetLengthVarInt->getDataLength() + $packetLengthVarInt->getValue();
 
-                $bufferLength = strlen($this->buffer);
                 //if we don't have enough data to read the entire packet wait for more data to enter
+                $bufferLength = strlen($this->inputBuffer);
                 if ($bufferLength < $totalLength) {
                     return;
                 }
 
-                //cut the packet length varint out
-                $this->buffer = substr($this->buffer, $packetLengthVarInt->getDataLength());
+                //remove the packet length varint from the buffer
+                $this->inputBuffer = substr($this->inputBuffer, $packetLengthVarInt->getDataLength());
 
-                //the data with the packet ID
-                $packetDataWithPacketID = substr($this->buffer, 0, $packetLengthVarInt->getValue());
+                //read the packet ID from the buffer
+                $packetDataWithPacketID = substr($this->inputBuffer, 0, $packetLengthVarInt->getValue());
 
-                //cut out the packet data from the buffer
-                $this->buffer = substr($this->buffer, $packetLengthVarInt->getValue());
+                //remove the rest of the packet from the buffer
+                $this->inputBuffer = substr($this->inputBuffer, $packetLengthVarInt->getValue());
 
+                //read the packet ID
                 $packetID = VarInt::readUnsignedVarInt($packetDataWithPacketID);
 
-                //just the data
+                //get the raw packet data
                 $packetData = substr($packetDataWithPacketID, $packetID->getDataLength());
 
-                $this->processPacket($packetID->getValue(), $packetData, $connection);
-            } while (strlen($this->buffer) > 0);
-        } catch (\Exception $ex) {
+                //trigger packet processing
+                $this->processPacket($packetID->getValue(), $packetData);
+
+                //if we have buffer left run again
+            } while (strlen($this->inputBuffer) > 0);
+
+            //if any exceptions are thrown (error parsing the packets e.t.c.) send a disconnect packet
+        } catch (Exception $ex) {
             echo "EXCEPTION IN PACKET PARSING {$ex->getMessage()}\n";
             echo $ex->getTraceAsString();
             $dis = new DisconnectPacket();
             $dis->setReason('Internal Server Error: '.$ex->getMessage());
-            $connection->end($dis->encodePacket());
+            $this->end($dis->encodePacket());
         }
     }
 
-    private function processPacket($id, $data, Connection $connection) {
+    /**
+     * @param $id int the packet ID
+     * @param $data string the raw packet data
+     * @throws \PublicUHC\MinecraftAuth\Protocol\InvalidDataException on packet parsing failing
+     */
+    private function processPacket($id, $data) {
+        //attempt to get all the packets for the stage we are on
         $stageMap = $this->packetClassMap[$this->stage->getValue()];
         if(null == $stageMap) {
             throw new InvalidDataException('Invalid Stage');
         }
 
+        //attempt to get the class for the current packet ID
         $packetClass = $stageMap[$id];
         if(null == $packetClass) {
             throw new InvalidDataException("Unknown packet ID $id for stage {$this->stage->getName()}");
         }
 
-        /** @var $packet ServerboundPacket */
+        /**
+         * Attempt to create the new packet
+         * @var $packet ServerboundPacket
+         */
         $packet = new $packetClass();
 
+        //parse the raw data into the packet
         $packet->fromRawData($data);
-        //var_dump($packet);
 
+        //send an event of style HANDSHAKE.HandshakePacket with the packet data
         $className = join('', array_slice(explode('\\', $packetClass), -1));
-        $this->emit("{$packet->getStage()->getName()}.$className", [$packet, $connection]);
+
+        $this->emit("{$packet->getStage()->getName()}.$className", [$packet]);
     }
 
     /**
@@ -148,17 +180,7 @@ class BaseClient extends EventEmitter {
      */
     public function sendPacket(ClientboundPacket $packet)
     {
-        //var_dump($packet);
-        $packetData = $packet->encodePacket();
-
-        if($this->secret != null) {
-            mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
-
-            $packetData = mcrypt_generic($this->encryptor, $packetData);
-
-            mcrypt_generic_deinit($this->encryptor);
-        }
-        $this->currentConnection->write($packetData);
+        $this->write($packet->encodePacket());
     }
 
     /**
@@ -168,16 +190,30 @@ class BaseClient extends EventEmitter {
      */
     public function disconnectClient(ClientboundPacket $packet = null)
     {
-        $packetData = $packet->encodePacket();
+        $this->end($packet->encodePacket());
+    }
 
+    /**
+     * Override the base write to add encryption if we're in an encypted stage
+     *
+     * @param $data String the data to write
+     * @return bool
+     * @Override
+     */
+    public function write($data)
+    {
+        if (!$this->writable) {
+            return false;
+        }
+
+        //encrypt the data if needed
         if($this->secret != null) {
             mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
-
-            $packetData = mcrypt_generic($this->encryptor, $packetData);
-
+            $data = mcrypt_generic($this->encryptor, $data);
             mcrypt_generic_deinit($this->encryptor);
         }
-        $this->currentConnection->end($packetData);
+
+        return $this->buffer->write($data);
     }
 
     /**
