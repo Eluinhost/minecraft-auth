@@ -28,9 +28,21 @@ class BaseClient extends Connection {
     /** @var String the secret/IV to use for stream encryption, null when not in encryption mode */
     private $secret;
 
+    private $lastPacket;
+    private $connectionTimer;
+
     public function __construct($stream, LoopInterface $loop)
     {
         parent::__construct($stream, $loop);
+
+        $this->lastPacket = $this->currentTime();
+
+        $this->connectionTimer = $loop->addPeriodicTimer(1, function() {
+            $currentTime = $this->currentTime();
+            if($currentTime - $this->lastPacket > 10000) {
+                $this->disconnectClient((new DisconnectPacket())->setReason('Connection timed out'));
+            }
+        });
 
         //default stage is handshake
         $this->stage = Stage::HANDSHAKE();
@@ -52,6 +64,17 @@ class BaseClient extends Connection {
 
         //call $this->onData whenever there is data available
         $this->on('data', [$this, 'onData']);
+    }
+
+    private function currentTime()
+    {
+        return round(microtime(true) * 1000);
+    }
+
+    public function handleClose()
+    {
+        parent::handleClose();
+        $this->connectionTimer->cancel();
     }
 
     /**
@@ -123,6 +146,8 @@ class BaseClient extends Connection {
 
                 //get the raw packet data
                 $packetData = substr($packetDataWithPacketID, $packetID->getDataLength());
+
+                $this->lastPacket = $this->currentTime();
 
                 //trigger packet processing
                 $this->processPacket($packetID->getValue(), $packetData);
