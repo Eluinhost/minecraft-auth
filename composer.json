@@ -12,10 +12,10 @@
     ],
     "require": {
         "ext-mcrypt": "*",
-        "phpseclib/phpseclib": "0.3.*",
-        "publicuhc/php-yggdrasil": "1.0.*",
-        "marc-mabe/php-enum": "1.2.*",
-        "react/react": "0.4.*"
+        "phpseclib/phpseclib": "~0.3",
+        "publicuhc/php-yggdrasil": "~1.0",
+        "marc-mabe/php-enum": "~1.2",
+        "react/react": "~0.4"
     },
     "require-dev": {
         "phpunit/phpunit": "3.7.*"
