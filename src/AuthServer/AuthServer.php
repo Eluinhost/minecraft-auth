@@ -79,7 +79,8 @@ class AuthServer extends Server {
         });
 
         $connection->on('close', function() use (&$connection) {
-            for($i = 0; $i<count($this->clients); $i++) {
+            $amount = count($this->clients);
+            for($i = 0; $i<$amount; $i++) {
                 /** @var $checkclient AuthClient */
                 $checkclient = $this->clients[$i];
                 //if we found our connection
@@ -87,7 +88,7 @@ class AuthServer extends Server {
                     //remove from array and reset the keys
                     unset($this->clients[$i]);
                     $this->clients = array_values($this->clients);
-                    echo "A client disconnected. Now there are total ". count($this->clients) . " clients.\n";
+                    echo "A client disconnected. Now there are total ". ($amount - 1) . " clients.\n";
                     return;
                 }
             }
