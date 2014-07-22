@@ -3,7 +3,7 @@
     "description": "Fake Minecraft server for authentication checking",
     "keywords": ["minecraft", "authentication", "auth", "minecraft server", "PHPAuthServer", "yggdrasil", "auth server"],
     "minimum-stability": "stable",
-    "license": "GPLv3",
+    "license": "GPL-3.0+",
     "authors": [
         {
             "name": "Graham Howden",
