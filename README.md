@@ -1,6 +1,8 @@
 minecraft-auth
 ==============
 
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/eb2f9934-6463-43c2-8b21-1efb511cfd82/small.png)](https://insight.sensiolabs.com/projects/eb2f9934-6463-43c2-8b21-1efb511cfd82)
+
 PHP Library for running a 'fake' Minecraft server that checks authentications are correct with the session servers and 
 kicks the player afterwards. Has a callback to change the disconnect message. I use if for verification codes to link minecraft
 accounts without needing them to input their password.
