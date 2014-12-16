@@ -23,4 +23,4 @@ abstract class Packet {
      * @return Direction
      */
     public abstract function getDirection();
-} 
+}

@@ -64,7 +64,7 @@ class AuthClient extends BaseClient {
     public function onEncryptionResponsePacket(EncryptionResponsePacket $packet)
     {
         //if we don't have a verifiyToken sent yet then the packet has been sent without us sending a request, disconnect client
-        if(null == $this->verifyToken) {
+        if(null === $this->verifyToken) {
             $this->disconnectClient((new DisconnectPacket())->setReason('Packet received out of order'));
             return;
         }
@@ -105,7 +105,7 @@ class AuthClient extends BaseClient {
             $this->emit('login_success', [$this, $disconnect]);
 
             //if no reason was set after the event then set a default
-            if($disconnect->getReasonJSON() == null) {
+            if($disconnect->getReasonJSON() === null) {
                 $disconnect->setReason("No kick reason supplied");
             }
 
@@ -197,4 +197,4 @@ class AuthClient extends BaseClient {
         $zero = new Math_BigInteger(0);
         return ($zero->compare($number) <= 0 ? "":"-") . ltrim($number->toHex(), "0");
     }
-} 
+}

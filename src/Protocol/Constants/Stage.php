@@ -17,4 +17,4 @@ final class Stage extends Enum {
     const STATUS = 1;
     const LOGIN = 2;
 
-} 
+}

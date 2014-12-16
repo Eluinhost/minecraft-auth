@@ -39,4 +39,4 @@ class Certificate {
     {
         return $this->privateKey;
     }
-} 
+}

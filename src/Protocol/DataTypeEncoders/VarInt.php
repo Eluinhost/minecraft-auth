@@ -37,7 +37,7 @@ class VarInt extends DataType {
         $result = $shift = 0;
         do {
             $readValue = self::read($fd, 1);
-            if(false === $readValue || $readValue == null) {
+            if(false === $readValue || $readValue === null) {
                 return false;
             }
             $original .= $readValue;
@@ -84,4 +84,4 @@ class VarInt extends DataType {
 
         return new VarInt($orig, $bytes, strlen($bytes));
     }
-} 
+}

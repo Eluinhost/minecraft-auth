@@ -37,4 +37,4 @@ abstract class DataType {
     {
         return $this->dataLength;
     }
-} 
+}

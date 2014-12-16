@@ -23,7 +23,7 @@ class AuthServer extends Server {
      */
     public function __construct($port = 25565, $host = '0.0.0.0', LoopInterface $loop = null)
     {
-        if(null == $loop) {
+        if(null === $loop) {
             $loop = Factory::create();
         }
         $this->loop = $loop;
@@ -95,8 +95,7 @@ class AuthServer extends Server {
         });
 
         //if there is an error with the connection echo the error and end the connection
-        $connection->on('error', function($error, $connection) {
-            /** @var $connection Connection */
+        $connection->on('error', function($error, Connection $connection) {
             echo "ERROR: $error\n";
             $connection->end();
         });
@@ -108,4 +107,4 @@ class AuthServer extends Server {
         $count = count($this->clients);
         echo "New client conected: {$connection->getRemoteAddress()}. Clients online: $count.\n";
     }
-} 
+}

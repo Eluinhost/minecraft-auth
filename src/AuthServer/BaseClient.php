@@ -100,7 +100,7 @@ class BaseClient extends Connection {
     public function onData($data)
     {
         //if we're in encryption stage decrypt it first
-        if($this->secret != null) {
+        if($this->secret !== null) {
             mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
             $data = mdecrypt_generic($this->encryptor, $data);
             mcrypt_generic_deinit($this->encryptor);
@@ -173,13 +173,13 @@ class BaseClient extends Connection {
     private function processPacket($id, $data) {
         //attempt to get all the packets for the stage we are on
         $stageMap = $this->packetClassMap[$this->stage->getValue()];
-        if(null == $stageMap) {
+        if(null === $stageMap) {
             throw new InvalidDataException('Invalid Stage');
         }
 
         //attempt to get the class for the current packet ID
         $packetClass = $stageMap[$id];
-        if(null == $packetClass) {
+        if(null === $packetClass) {
             throw new InvalidDataException("Unknown packet ID $id for stage {$this->stage->getName()}");
         }
 
@@ -228,7 +228,7 @@ class BaseClient extends Connection {
     public function write($data)
     {
         //encrypt the data if needed
-        if($this->secret != null) {
+        if($this->secret !== null) {
             mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
             $data = mcrypt_generic($this->encryptor, $data);
             mcrypt_generic_deinit($this->encryptor);
@@ -245,7 +245,7 @@ class BaseClient extends Connection {
     public function end($data = null)
     {
         //encrypt the data if needed
-        if($data != null && $this->secret != null) {
+        if($data !== null && $this->secret !== null) {
             mcrypt_generic_init($this->encryptor, $this->secret, $this->secret);
             $data = mcrypt_generic($this->encryptor, $data);
             mcrypt_generic_deinit($this->encryptor);
@@ -272,4 +272,4 @@ class BaseClient extends Connection {
         mcrypt_module_close($this->encryptor);
         $this->encryptor = $this->secret = null;
     }
-} 
+}

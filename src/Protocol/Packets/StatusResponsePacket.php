@@ -178,7 +178,7 @@ class StatusResponsePacket extends ClientboundPacket {
                 'text'  => $this->description
             ],
         ];
-        if($this->favicon != null) {
+        if($this->favicon !== null) {
             $payload['favicon'] = $this->favicon;
         }
 

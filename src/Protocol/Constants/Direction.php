@@ -15,4 +15,4 @@ class Direction extends Enum {
     const SERVERBOUND = 0;
     const CLIENTBOUND = 1;
 
-} 
+}

@@ -106,4 +106,4 @@ class VarIntTest extends \PHPUnit_Framework_TestCase {
         $this->setExpectedException('\PublicUHC\MinecraftAuth\ReactServer\InvalidDataException');
         VarInt::readUnsignedVarInt($data);
     }
-} 
+}

@@ -22,4 +22,4 @@ class StringType extends DataType {
 
         return new StringType($data, $stringLengthVarInt->getEncoded() . $data, $stringLengthVarInt->getDataLength() + $stringLength);
     }
-} 
+}
