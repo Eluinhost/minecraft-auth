@@ -3,6 +3,7 @@ namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
 use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\StringType;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 
 /**
  * Represents an encryption request. http://wiki.vg/Protocol#Encryption_Request
@@ -93,12 +94,12 @@ class EncryptionRequestPacket extends ClientboundPacket {
         $serverIDEncoded = StringType::write($this->serverID);
 
         $encodedPublicKey = base64_decode($this->getPublicKey());
-        $publicKeyLength = pack('n', strlen($encodedPublicKey));
+        $publicKeyLength = VarInt::writeUnsignedVarInt(strlen($encodedPublicKey));
 
         $encodedToken = $this->getToken();
-        $tokenLength = pack('n', strlen($encodedToken));
+        $tokenLength = VarInt::writeUnsignedVarInt(strlen($encodedToken));
 
-        return $serverIDEncoded->getEncoded() . $publicKeyLength . $encodedPublicKey . $tokenLength . $encodedToken;
+        return $serverIDEncoded->getEncoded() . $publicKeyLength->getEncoded() . $encodedPublicKey . $tokenLength->getEncoded() . $encodedToken;
     }
 
     /**

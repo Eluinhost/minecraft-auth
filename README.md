@@ -30,8 +30,8 @@ Example Usage
         $packet->setDescription('test server')
             ->setMaxPlayers(10)
             ->setOnlineCount(1000)
-            ->setVersion('your mum')
-            ->setProtocol(5);
+            ->setVersion('1.8+')
+            ->setProtocol(47);
     });
     
     $server->start();
@@ -58,8 +58,8 @@ or setReasonJSON (to set a pre-encoded json string).
         $packet->setDescription('test')
             ->setMaxPlayers(10)
             ->setOnlineCount(1000)
-            ->setVersion('your mum')
-            ->setProtocol(5);
+            ->setVersion('1.8+')
+            ->setProtocol(47);
             ->setOnlinePlayers([
                 [
                     'name' => 'Eluinhost',
@@ -74,7 +74,7 @@ This is the status_request event. It is called whenever a client requests data f
 ->setMaxPlayers(int)      - the number after the / on the list  
 ->setOnlineCount(int)     - the number before the / on the list  
 ->setVersion(string)      - If the client is connecting on a different protocol this version number will show instead of min/max players  
-->setProtocol(5)          - The protocol version to set to, we only accept 5 so either set this to 5 or leave it out   
+->setProtocol(47)         - The protocol version to set to, we only accept 47 so either set this to 47 or leave it out
 ->setOnlinePlayers(array) - An array of player names to show when hovering over the online count. For array format check the PHPDoc comment   
 ->setFavicon(string)      - The image in text format (i.e. data:image/png;base64,DATAHERE)     
 
@@ -83,8 +83,8 @@ All of the method can be ignored. If they are not set the following will be set 
 ->setDescription(string); - Default: §4▁§e▂§4▃§e▄§4▅§e▆§4▇§e█ §4§l   PHPAuthServer   §e█§4▇§e▆§4▅§e▄§4▃§e▂§4▁ §c▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔  
 ->setMaxPlayers(int)      - Default: -1  
 ->setOnlineCount(int)     - Default: -1  
-->setVersion(string)      - Default: 1.7.6+  
-->setProtocol(5)          - Default: 5  
+->setVersion(string)      - Default: 1.8+
+->setProtocol(47)         - Default: 47
 ->setOnlinePlayers(array) - Default: []  
 ->setFavicon(string)      - Default: null (no favicon)  
     

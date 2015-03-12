@@ -183,9 +183,9 @@ class AuthClient extends BaseClient {
      */
     public function onHandshakePacket(HandshakePacket $packet)
     {
-        //only allow protocol 5 to connect (1.7.6+) TODO can probably allow greater range, needs testing
-        if($packet->getProtocolVersion() != 5) {
-            $this->disconnectClient((new DisconnectPacket())->setReason('Invalid Minecraft Version, use 1.7.6+'));
+        //only allow protocol 47 to connect (1.8+) TODO can probably allow greater range, needs testing
+        if($packet->getProtocolVersion() != 47) {
+            $this->disconnectClient((new DisconnectPacket())->setReason('Invalid Minecraft Version, use 1.8+'));
         }
 
         //move to the next stage as defined in the packet (STATUS or LOGIN)

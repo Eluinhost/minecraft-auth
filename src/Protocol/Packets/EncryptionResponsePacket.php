@@ -2,6 +2,7 @@
 namespace PublicUHC\MinecraftAuth\Protocol\Packets;
 
 use PublicUHC\MinecraftAuth\Protocol\Constants\Stage;
+use PublicUHC\MinecraftAuth\Protocol\DataTypeEncoders\VarInt;
 
 /**
  * Represents an encryption response. http://wiki.vg/Protocol#Encryption_Response
@@ -71,16 +72,16 @@ class EncryptionResponsePacket extends ServerboundPacket {
      */
     public function fromRawData($data)
     {
-        $secretLength = unpack('nshort', substr($data, 0, 2))['short'];
-        $data = substr($data, 2);
+        $secretLength = VarInt::readUnsignedVarInt($data);
+        $data = substr($data, $secretLength->getDataLength());
 
-        $secretData = substr($data, 0, $secretLength);
-        $data = substr($data, $secretLength);
+        $secretData = substr($data, 0, $secretLength->getValue());
+        $data = substr($data, $secretLength->getValue());
 
-        $verifyLength = unpack('nshort', substr($data, 0, 2))['short'];
-        $data = substr($data, 2);
+        $verifyLength = VarInt::readUnsignedVarInt($data);
+        $data = substr($data, $verifyLength->getDataLength());
 
-        $verifyData = substr($data, 0, $verifyLength);
+        $verifyData = substr($data, 0, $verifyLength->getValue());
 
         $this->setToken($verifyData)->setSecret($secretData);
     }
