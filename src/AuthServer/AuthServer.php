@@ -89,6 +89,7 @@ class AuthServer extends Server {
                     unset($this->clients[$i]);
                     $this->clients = array_values($this->clients);
                     echo "A client disconnected. Now there are total ". ($amount - 1) . " clients.\n";
+                    $this->emit('close', []);
                     return;
                 }
             }
